@@ -1,0 +1,11 @@
+{
+	"id": "lock-n-find",
+	"name": "Lock & Find (Privacy)",
+	"version": "0.0.1",
+	"minAppVersion": "0.0.1",
+	"description": "Lock & Find (Privacy)",
+	"author": "Obsidian",
+	"authorUrl": "https://obsidian.md",
+	"fundingUrl": "https://obsidian.md/pricing",
+	"isDesktopOnly": false
+}
