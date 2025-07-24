@@ -1,8 +1,430 @@
 /*
+ * Lock & Find - Obsidian Plugin
+ * A minimal UI for encrypting and managing sensitive information
+ */
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
+/* Button styling */
+.pii-btn-bar,
+.pii-btn-bar-bottom {
+  display: flex;
+  padding: 12px 16px;
+  align-items: center;
+  gap: 8px;
+}
 
-If your plugin does not need CSS, delete this file.
+.pii-btn-bar button,
+.pii-btn-bar-bottom button {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s ease;
+}
 
-*/
+.pii-btn-bar button:hover,
+.pii-btn-bar-bottom button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.pii-btn-bar button svg,
+.pii-btn-bar-bottom button svg {
+  margin-right: 6px;
+}
+
+/* Primary action button */
+.pii-btn-primary {
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+/* Secondary action button */
+.pii-btn-secondary {
+  background-color: var(--background-modifier-border);
+  color: var(--text-normal);
+}
+
+/* Drop area styling */
+.pii-drop {
+  border: 2px dashed var(--interactive-accent);
+  border-radius: 6px;
+  min-height: 100px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  margin: 12px 0;
+  transition: all 0.2s ease;
+}
+
+.pii-drop.hover {
+  background: var(--background-modifier-hover);
+  border-color: var(--interactive-accent-hover);
+}
+
+.pii-drop-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+  color: var(--interactive-accent);
+}
+
+/* Item rows */
+.pii-list {
+  margin: 12px 0;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.pii-row {
+  padding: 10px;
+  border-radius: 4px;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+  background: var(--background-secondary);
+  transition: all 0.2s ease;
+}
+
+.pii-row:hover {
+  background: var(--background-modifier-hover);
+}
+
+.pii-row-text {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pii-row-location {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-left: 8px;
+}
+
+/* Tags for selected items */
+.pii-tag {
+  background: var(--background-modifier-border);
+  color: var(--text-normal);
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin: 4px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+}
+
+/* Manual selection tags (user-dragged text) */
+.pii-tag-manual {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-left: 3px solid var(--interactive-accent-hover);
+}
+
+.pii-tag-manual::before {
+  content: "👆 ";
+  margin-right: 4px;
+}
+
+/* Modal styling */
+.pii-modal {
+  max-width: 400px;
+  background-color: var(--background-primary);
+  opacity: 1;
+  z-index: 1000;
+}
+
+.pii-modal-content {
+  padding: 20px;
+  max-width: 400px;
+  margin: 0 auto;
+  background-color: var(--background-primary);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.pii-modal-title {
+  margin-top: 0;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  font-size: 1.3em;
+  color: var(--text-normal);
+}
+
+.pii-modal-description {
+  margin-bottom: 20px;
+  color: var(--text-muted);
+  font-size: 0.9em;
+  line-height: 1.5;
+}
+
+.pii-modal-form {
+  margin-bottom: 20px;
+}
+
+.pii-password-container {
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.pii-input-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: var(--text-normal);
+  font-size: 14px;
+}
+
+.pii-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.pii-password-input {
+  width: 100%;
+  padding: 8px 36px 8px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--background-modifier-border);
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 14px;
+  height: 36px;
+  box-sizing: border-box;
+}
+
+.pii-password-input:focus {
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.2);
+  outline: none;
+}
+
+.pii-password-toggle {
+  position: absolute;
+  right: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pii-password-toggle:hover {
+  color: var(--text-normal);
+}
+
+.pii-modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+  gap: 12px;
+}
+
+.pii-modal-buttons button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Status messages */
+.pii-status {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--background-secondary);
+  color: var(--text-normal);
+  padding: 10px 16px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  max-width: 90%;
+  border-left: 4px solid var(--interactive-accent);
+  animation: pii-status-fade-in 0.3s ease-out;
+}
+
+.pii-status::before {
+  content: "";
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 10px;
+  border: 2px solid var(--interactive-accent);
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: pii-status-spin 1s linear infinite;
+}
+
+.pii-status-success {
+  border-left-color: var(--interactive-success);
+}
+
+.pii-status-success::before {
+  content: "✓";
+  border: none;
+  color: var(--interactive-success);
+  animation: none;
+  font-weight: bold;
+}
+
+.pii-status-error {
+  background: var(--background-modifier-error);
+  color: var(--text-error);
+  border-left-color: var(--text-error);
+}
+
+@keyframes pii-status-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pii-status-fade-in {
+  from { opacity: 0; transform: translate(-50%, 10px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* Mode toggle styling */
+.pii-mode-toggle {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0;
+  padding: 8px 16px;
+}
+
+.pii-mode-toggle button {
+  flex: 1;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Scan controls styling */
+.pii-scan-controls {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0;
+  padding: 8px 16px;
+}
+
+.pii-btn-half {
+  flex: 1;
+}
+
+/* Search container styling */
+.pii-search-container {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0;
+  padding: 8px 16px;
+  align-items: center;
+}
+
+.pii-search-input {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--background-modifier-border);
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 14px;
+  height: 36px;
+  box-sizing: border-box;
+}
+
+.pii-search-input:focus {
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.2);
+  outline: none;
+}
+
+.pii-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Empty state */
+.pii-empty {
+  text-align: center;
+  padding: 24px 0;
+  color: var(--text-muted);
+}
+
+/* Password status indicators - scoped to our settings */
+.pii-settings-container .pii-password-status-active {
+  color: var(--interactive-success);
+  font-weight: 500;
+}
+
+.pii-settings-container .pii-password-status-inactive {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Collapsible patterns section styling */
+.pii-settings-container details {
+  margin-bottom: 16px;
+}
+
+.pii-settings-container .pii-collapsible-header {
+  font-size: 1.2em;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 0;
+  user-select: none;
+}
+
+.pii-settings-container .pii-collapsible-header:hover {
+  color: var(--interactive-accent);
+}
+
+.pii-settings-container .pii-patterns-container {
+  margin-top: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+  border-left: 2px solid var(--background-modifier-border);
+  padding-left: 12px;
+}
+
+/* Default Patterns section styling - scoped to our settings */
+.pii-settings-container .pii-country-buttons {
+  margin: 12px 0;
+}
+
+.pii-settings-container .pii-country-buttons .setting-item {
+  border-radius: 4px;
+  background: var(--background-secondary);
+  padding: 12px;
+  margin-bottom: 8px;
+  transition: all 0.2s ease;
+}
+
+.pii-settings-container .pii-country-buttons .setting-item:hover {
+  background: var(--background-modifier-hover);
+}
+
+.pii-settings-container .pii-country-buttons .setting-item-name {
+  font-weight: 500;
+  color: var(--text-normal);
+}
+
+.pii-settings-container .pii-country-buttons .setting-item-description {
+  color: var(--text-muted);
+  font-size: 0.9em;
+}
+
