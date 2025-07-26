@@ -30,6 +30,9 @@ This plugin is built with TypeScript and utilizes the Obsidian plugin API.
 3. Reload Obsidian
 4. Enable the plugin in the Community Plugins settings
 
+## Demo
+![Demo](./demo/demo.gif)
+
 ## Usage
 
 ### Basic Usage
