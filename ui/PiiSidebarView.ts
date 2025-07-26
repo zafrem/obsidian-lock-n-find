@@ -220,7 +220,7 @@ export class PiiSidebarView extends ItemView {
   private currentMode: 'scan' | 'search' = 'scan';
   constructor(leaf: WorkspaceLeaf, private plugin:PiiLockPlugin){super(leaf);}
   getViewType(){return VIEW_TYPE_PII;}
-  getDisplayText(){return "PII Scan";}
+  getDisplayText(){return "Lock and Find";}
   getIcon(){return "shield";}
 
   async onOpen(){
@@ -594,7 +594,7 @@ export class PiiSidebarView extends ItemView {
     
     // Encrypt the text
     const cipher = await encrypt(text, password);
-    const wrapped = `§ENC_${makeUUID().slice(0,6)}_${cipher}§`;
+    const wrapped = `<details>\n <summary>Lock</summary>\n §ENC_${makeUUID().slice(0,6)}_${cipher}§\n</details>`;
     
     // Replace the first occurrence of the text with encrypted version
     fileContent = fileContent.substring(0, index) + wrapped + fileContent.substring(index + text.length);
@@ -704,7 +704,7 @@ export class PiiSidebarView extends ItemView {
 
         // Encrypt the text
         const cipher = await encrypt(m.text, pwd);
-        const wrapped = `§ENC_${makeUUID().slice(0,6)}_${cipher}§`;
+        const wrapped = `<details>\n <summary>Lock</summary>\n §ENC_${makeUUID().slice(0,6)}_${cipher}§\n</details>`;
         
         // Replace the original text with encrypted version
         text = text.replace(m.text, wrapped);
@@ -747,8 +747,8 @@ export class PiiSidebarView extends ItemView {
     const pwd = await this.getPassword(false);
     if(!pwd) return;
 
-    // Pattern to match encrypted content
-    const encRegex = /§ENC_[A-Za-z0-9]{6}_(.*?)§/g;
+    // Pattern to match encrypted content within details elements
+    const encRegex = /<details>\s*<summary>Lock<\/summary>\s*§ENC_[A-Za-z0-9]{6}_(.*?)§\s*<\/details>/g;
 
     // Show progress indicator
     const statusBar = this.containerEl.createEl("div", {
@@ -792,7 +792,7 @@ export class PiiSidebarView extends ItemView {
           try {
             // Await the decryption promise
             const plain = await decrypt(m.cipher, pwd);
-            // Replace the encrypted text with the decrypted text
+            // Replace the entire details element with the decrypted text
             txt = txt.replace(m.full, plain);
             unlocked++;
             changed = true;

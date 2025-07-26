@@ -17,7 +17,7 @@ export default class PiiLockPlugin extends Plugin {
     );
 
     // shield icon – sidebar toggle
-    this.addRibbonIcon("shield", "PII Scanner", () => this.activateSidebar());
+    this.addRibbonIcon("shield", "Lock and Find", () => this.activateSidebar());
 
     // settings tab + commands
     this.addSettingTab(new PiiSettingTab(this.app, this));
