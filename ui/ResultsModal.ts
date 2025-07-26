@@ -21,35 +21,35 @@ export class ResultsModal extends Modal {
       return;
     }
 
-    /* 리스트 DOM */
+    /* List DOM */
     const list = contentEl.createEl("div", { cls: "pii-list" });
 
     this.matches.forEach((m, idx) => {
       const item = list.createEl("div", { cls: "pii-item" });
 
-      /* ✔︎ 체크박스 */
+      /* ✔︎ Checkbox */
       const cb = item.createEl("input", { type: "checkbox" }) as HTMLInputElement;
-      cb.checked = true; // 기본 선택
+      cb.checked = true; // Default selection
 
-      /* 매칭 문자열 + 위치 */
+      /* Matching string + location */
       item.createEl("span", {
         text: `${m.text}  —  ${m.file.basename}:${m.line + 1}`,
         cls: "pii-text",
       });
 
-      /* ▶︎ 파일 열기 버튼 */
+      /* ▶︎ Open file button */
       const goBtn = item.createEl("button", { text: "Open" });
       goBtn.onclick = () => this.openAtPosition(m);
     });
 
-    /* 닫기 버튼 */
+    /* Close button */
     contentEl.createEl("button", {
       text: "Close",
       cls: "mod-cta",
     }).onclick = () => this.close();
   }
 
-  /** 같은 파일을 열어 커서 이동 */
+  /** Open the same file and move cursor */
   private async openAtPosition(m: MatchInfo) {
     const leaf = this.app.workspace.getLeaf(false);
     await leaf.openFile(m.file);

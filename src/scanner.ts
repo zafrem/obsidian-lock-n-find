@@ -2,10 +2,10 @@ import type PiiLockPlugin from "../main";
 import { TFile } from "obsidian";
 
 export interface MatchInfo {
-  file: TFile;      // 파일 객체
-  line: number;     // 0‑based 행 번호
-  col: number;      // 0‑based 열 번호
-  text: string;     // 매칭된 문자열
+  file: TFile;      // file object
+  line: number;     // 0‑based row number
+  col: number;      // 0‑based column number
+  text: string;     // matched string
 }
 
 export async function scanVault(plugin: PiiLockPlugin): Promise<MatchInfo[]> {
@@ -30,5 +30,5 @@ export async function scanVault(plugin: PiiLockPlugin): Promise<MatchInfo[]> {
       });
     });
   }
-  return results;    // UI(ResultsModal 등)에서 자유롭게 사용
+  return results;    // UI(ResultsModal)
 }

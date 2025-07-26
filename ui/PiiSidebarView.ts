@@ -210,7 +210,7 @@ export class PwModal extends Modal {
 }
 
 
-/* ── 사이드바 뷰 ─ */
+/* ── Sidebar View ─ */
 export class PiiSidebarView extends ItemView {
   private matches: MatchInfo[] = [];
   private searchResults: MatchInfo[] = [];
