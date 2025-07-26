@@ -31,7 +31,7 @@ This plugin is built with TypeScript and utilizes the Obsidian plugin API.
 4. Enable the plugin in the Community Plugins settings
 
 ## Demo
-![Demo](./demo/demo.gif)
+![Demo](./demo/Demo.gif)
 
 ## Usage
 
