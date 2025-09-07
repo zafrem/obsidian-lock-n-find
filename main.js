@@ -958,10 +958,10 @@ var PiiSettingTab = class extends import_obsidian2.PluginSettingTab {
       })
     );
     containerEl.createEl("hr");
-    containerEl.createEl("h3", { text: "Default Patterns" });
     const availableCountries = Object.keys(defaultPatterns).filter((c) => c !== "None");
     const selectedCountries = this.plugin.settings.selectedCountries;
     const selectedCountryNames = selectedCountries.map((c) => defaultPatterns[c]?.displayName || c).join(", ");
+    containerEl.createEl("h3", { text: "Add Country Patterns" });
     new import_obsidian2.Setting(containerEl).setName("Selected Countries").setDesc(selectedCountries.length > 0 ? selectedCountryNames : "No countries selected").addButton(
       (btn) => btn.setButtonText("Clear All").onClick(async () => {
         this.plugin.settings.selectedCountries = [];
@@ -973,7 +973,6 @@ var PiiSettingTab = class extends import_obsidian2.PluginSettingTab {
         this.display();
       })
     );
-    containerEl.createEl("h4", { text: "Add Country Patterns" });
     const countryButtonsContainer = containerEl.createDiv("pii-country-buttons");
     availableCountries.forEach((country) => {
       const pattern = defaultPatterns[country];
@@ -1046,6 +1045,50 @@ var PiiSettingTab = class extends import_obsidian2.PluginSettingTab {
         })
       );
     });
+    containerEl.createEl("hr");
+    containerEl.createEl("h3", { text: "Default Patterns" });
+    new import_obsidian2.Setting(containerEl).setName("Create Default Patterns File").setDesc("Create the default-patterns.ini file with standard country patterns").addButton(
+      (btn) => btn.setButtonText("Create File").setCta().onClick(async () => {
+        const defaultContent = `[US]
+name=[A-Z][a-z]+\\s[A-Z][a-z]+|[A-Z][a-z]+\\s[A-Z]\\.\\s[A-Z][a-z]+
+address=\\d{3}-\\d{2}-\\d{4}
+phone=\\d{3}-\\d{3}-\\d{4}|\\(\\d{3}\\)\\s\\d{3}-\\d{4}|\\+1\\s\\d{3}\\s\\d{3}\\s\\d{4}
+
+[Korea]
+name=[\uAC00-\uD7A3]{2,4}|[A-Z][a-z]+\\s[A-Z][a-z]+
+address=\\d{6}-\\d{7}
+phone=010[- ]?\\d{4}[- ]?\\d{4}|\\+82\\s\\d{2}\\s\\d{4}\\s\\d{4}
+
+[Japan]
+name=[\u3072\u3089\u304C\u306A-\u30AB\u30BF\u30AB\u30CA\u4E00-\u9FAF]{2,6}|[A-Z][a-z]+\\s[A-Z][a-z]+
+address=\\d{3}-\\d{4}|\\d{7}
+phone=\\d{3}-\\d{4}-\\d{4}|\\d{4}-\\d{2}-\\d{4}|\\+81\\s\\d{3}\\s\\d{4}\\s\\d{4}
+
+[Taiwan]
+name=[\u4E00-\u9FAF]{2,4}|[A-Z][a-z]+\\s[A-Z][a-z]+
+address=\\d{8}|\\d{10}
+phone=\\d{4}-\\d{3}-\\d{3}|\\d{2}-\\d{8}|\\+886\\s\\d{3}\\s\\d{3}\\s\\d{3}
+
+[India]
+name=[A-Z][a-z]+\\s[A-Z][a-z]+|[\u0905-\u0939]{2,6}
+address=\\d{4}\\s\\d{4}\\s\\d{4}
+phone=\\d{3}-\\d{3}-\\d{4}|\\+91\\s\\d{5}\\s\\d{5}|\\d{10}
+
+[None]
+name=
+address=
+phone=
+`;
+        try {
+          await saveDefaultPatternsToFile(this.plugin, defaultContent);
+          new import_obsidian2.Notice("Default patterns file created successfully!");
+          this.display();
+        } catch (error) {
+          console.error("Failed to create default patterns file:", error);
+          new import_obsidian2.Notice("Failed to create default patterns file");
+        }
+      })
+    );
     containerEl.createEl("hr");
     containerEl.createEl("h3", { text: "Password Management" });
     const hasStoredPassword = !!this.plugin.settings.storedPassword;

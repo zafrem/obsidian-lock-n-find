@@ -412,14 +412,15 @@ import {
       );
 
       containerEl.createEl("hr");
-      containerEl.createEl("h3", { text: "Default Patterns" });
-
+      
       // Use the already loaded default patterns
       const availableCountries = Object.keys(defaultPatterns).filter(c => c !== 'None');
 
       // Show currently selected countries
       const selectedCountries = this.plugin.settings.selectedCountries;
       const selectedCountryNames = selectedCountries.map(c => defaultPatterns[c]?.displayName || c).join(', ');
+      
+      containerEl.createEl("h3", { text: "Add Country Patterns" });
       
       new Setting(containerEl)
         .setName("Selected Countries")
@@ -440,7 +441,6 @@ import {
         );
 
       // Country selection buttons
-      containerEl.createEl("h4", { text: "Add Country Patterns" });
       const countryButtonsContainer = containerEl.createDiv("pii-country-buttons");
       
       availableCountries.forEach(country => {
@@ -532,6 +532,60 @@ import {
               })
           );
       });
+
+      containerEl.createEl("hr");
+      containerEl.createEl("h3", { text: "Default Patterns" });
+
+      // Create Default Patterns File button
+      new Setting(containerEl)
+        .setName("Create Default Patterns File")
+        .setDesc("Create the default-patterns.ini file with standard country patterns")
+        .addButton((btn) =>
+          btn
+            .setButtonText("Create File")
+            .setCta()
+            .onClick(async () => {
+              const defaultContent = `[US]
+name=[A-Z][a-z]+\\s[A-Z][a-z]+|[A-Z][a-z]+\\s[A-Z]\\.\\s[A-Z][a-z]+
+address=\\d{3}-\\d{2}-\\d{4}
+phone=\\d{3}-\\d{3}-\\d{4}|\\(\\d{3}\\)\\s\\d{3}-\\d{4}|\\+1\\s\\d{3}\\s\\d{3}\\s\\d{4}
+
+[Korea]
+name=[가-힣]{2,4}|[A-Z][a-z]+\\s[A-Z][a-z]+
+address=\\d{6}-\\d{7}
+phone=010[- ]?\\d{4}[- ]?\\d{4}|\\+82\\s\\d{2}\\s\\d{4}\\s\\d{4}
+
+[Japan]
+name=[ひらがな-カタカナ一-龯]{2,6}|[A-Z][a-z]+\\s[A-Z][a-z]+
+address=\\d{3}-\\d{4}|\\d{7}
+phone=\\d{3}-\\d{4}-\\d{4}|\\d{4}-\\d{2}-\\d{4}|\\+81\\s\\d{3}\\s\\d{4}\\s\\d{4}
+
+[Taiwan]
+name=[一-龯]{2,4}|[A-Z][a-z]+\\s[A-Z][a-z]+
+address=\\d{8}|\\d{10}
+phone=\\d{4}-\\d{3}-\\d{3}|\\d{2}-\\d{8}|\\+886\\s\\d{3}\\s\\d{3}\\s\\d{3}
+
+[India]
+name=[A-Z][a-z]+\\s[A-Z][a-z]+|[अ-ह]{2,6}
+address=\\d{4}\\s\\d{4}\\s\\d{4}
+phone=\\d{3}-\\d{3}-\\d{4}|\\+91\\s\\d{5}\\s\\d{5}|\\d{10}
+
+[None]
+name=
+address=
+phone=
+`;
+              
+              try {
+                await saveDefaultPatternsToFile(this.plugin, defaultContent);
+                new Notice("Default patterns file created successfully!");
+                this.display(); // Refresh to load the new patterns
+              } catch (error) {
+                console.error("Failed to create default patterns file:", error);
+                new Notice("Failed to create default patterns file");
+              }
+            })
+        );
 
       containerEl.createEl("hr");
       containerEl.createEl("h3", { text: "Password Management" });
