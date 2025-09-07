@@ -104,7 +104,7 @@ Available settings include:
 If you encounter any bugs or issues:
 
 1. Check the console for error messages (Ctrl+Shift+I)
-2. Visit our [GitHub Issues page](https://github.com/yourusername/obsidian-lock-n-find/issues) to report the problem
+2. Visit our [GitHub Issues page](https://github.com/zafrem/obsidian-lock-n-find/issues) to report the problem
 3. Include details about your Obsidian version and operating system
 
 ## For Developers
