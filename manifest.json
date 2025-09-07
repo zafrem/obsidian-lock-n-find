@@ -5,10 +5,6 @@
 	"minAppVersion": "0.1.0",
 	"description": "Lock & Find (Privacy)",
 	"author": "Zafrem",
-	"authorUrl": "https://github.com/zafrem/obsidian-lock-n-find/README.md",
-	"fundingUrl": "https://obsidian.md/pricing",
-	"isDesktopOnly": false,
-	"js": "main.js",
-	"css": "styles.css"
-	  
+	"authorUrl": "https://github.com/zafrem",
+	"isDesktopOnly": true	  
 }
