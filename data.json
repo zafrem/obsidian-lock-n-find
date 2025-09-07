@@ -1,8 +1,42 @@
 {
-  "patterns": [],
-  "patternMetadata": [],
+  "patterns": [
+    "[가-힣]{2,4}",
+    "[A-Z][a-z]+\\s[A-Z][a-z]+",
+    "\\d{6}-\\d{7}",
+    "010[- ]?\\d{4}[- ]?\\d{4}",
+    "\\+82\\s\\d{2}\\s\\d{4}\\s\\d{4}"
+  ],
+  "patternMetadata": [
+    {
+      "pattern": "[가-힣]{2,4}",
+      "source": "Korea",
+      "displayName": "Korea Name 1"
+    },
+    {
+      "pattern": "[A-Z][a-z]+\\s[A-Z][a-z]+",
+      "source": "Korea",
+      "displayName": "Korea Name 2"
+    },
+    {
+      "pattern": "\\d{6}-\\d{7}",
+      "source": "Korea",
+      "displayName": "Korea Address 1"
+    },
+    {
+      "pattern": "010[- ]?\\d{4}[- ]?\\d{4}",
+      "source": "Korea",
+      "displayName": "Korea Phone 1"
+    },
+    {
+      "pattern": "\\+82\\s\\d{2}\\s\\d{4}\\s\\d{4}",
+      "source": "Korea",
+      "displayName": "Korea Phone 2"
+    }
+  ],
   "encryptAlgo": "AES-GCM",
   "storedPassword": "0ffe1abd1a08215353c233d6e009613e95eec4253832a761af28ff37ac5a150c",
   "defaultPatterns": "",
-  "selectedCountries": []
+  "selectedCountries": [
+    "Korea"
+  ]
 }

@@ -9,10 +9,15 @@ This plugin is built with TypeScript and utilizes the Obsidian plugin API.
 
 ## Features
 
-- Adds a ribbon icon for quick access to the plugin functionality
-- Provides commands to find and lock content in your notes
-- Includes customizable settings in the plugin settings tab
-- Supports global event handling for improved user experience
+- **Dual Mode Operation**: Switch between automatic PII scanning and manual text search
+- **Drag & Drop Interface**: Easily select sensitive information by dragging items to the encryption area
+- **Text Selection Support**: Select text directly in your notes and drag it for encryption
+- **Sidebar Integration**: Opens in the left sidebar for easy access while working
+- **Secure Encryption**: Uses modern cryptographic standards to protect your sensitive data
+- **Password Management**: Secure password storage with hashing for repeated use
+- **Real-time Status**: Visual feedback during scanning and encryption operations
+- **Customizable Settings**: Configure PII patterns and plugin behavior
+- **Memory Efficient**: Optimized event handling prevents memory leaks
 
 ## Installation
 
@@ -37,26 +42,39 @@ This plugin is built with TypeScript and utilizes the Obsidian plugin API.
 
 ### Basic Usage
 
-1. Click the Lock and Find icon in the ribbon menu
-2. Enter your search term in the search field
-3. Use the provided options to refine your search
-4. Click on results to navigate to them
+1. Click the Lock and Find icon in the ribbon menu to open the sidebar
+2. Choose between **Scan Mode** (automatic PII detection) or **Search Mode** (manual text search)
+3. In Scan Mode: Click "Scan Vault" to automatically detect sensitive information
+4. In Search Mode: Enter your search term and click "Search"
+5. Drag and drop items to the encryption area or manually select text from your notes
+6. Click "Lock Selected" to encrypt the sensitive information
 
-### Commands
+### Modes
 
-The plugin provides several commands that can be accessed via the Command Palette (Ctrl/Cmd+P):
+**Scan Mode**: Automatically detects potentially sensitive information using predefined patterns:
+- Personal identification numbers
+- Email addresses
+- Phone numbers
+- Credit card information
+- Custom patterns you define
 
-- **Open Lock and Find**: Opens the main search interface
-- **Lock Current Selection**: Locks the currently selected text
-- **Find in Current Note**: Searches only within the active note
+**Search Mode**: Manually search for specific text strings:
+- Find all instances of specific words or phrases
+- Case-sensitive or case-insensitive search
+- Search across your entire vault
 
-### Settings
+### Encryption & Decryption
 
-Customize the plugin behavior in the Settings tab:
+**Encrypt (Lock)**: 
+- Drag items from the results list to the drop area
+- Select text in your notes and drag it to the drop area
+- Click "Lock Selected" to encrypt all items
+- Password is securely hashed and stored for convenience
 
-- Configure search behavior and appearance
-- Set keyboard shortcuts for common actions
-- Adjust highlighting and locking preferences
+**Decrypt (Unlock)**:
+- Click "Unlock All" to decrypt all encrypted content in your vault
+- Uses the same password from encryption
+- Processes all markdown files automatically
 
 ## Configuration
 
@@ -101,10 +119,13 @@ If you encounter any bugs or issues:
 
 ### Code Quality
 
-This project uses ESLint to maintain code quality:
+This project follows modern development practices:
 
-- Install ESLint: `npm install -g eslint`
-- Run analysis: `eslint main.ts` or `eslint ./src/`
+- **Memory Management**: Proper event listener cleanup to prevent memory leaks
+- **Error Handling**: Consistent error logging and user feedback
+- **Constants**: Named constants for timeouts and configuration values
+- **TypeScript**: Full type safety throughout the codebase
+- **ESLint**: Code quality enforcement (`eslint main.ts` or `eslint ./src/`)
 
 ## Release Process
 

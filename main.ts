@@ -39,8 +39,8 @@ export default class PiiLockPlugin extends Plugin {
       return;
     }
     
-    // Otherwise create a new leaf
-    const leaf = this.app.workspace.getLeaf('tab');
+    // Otherwise create a new leaf in the left sidebar
+    const leaf = this.app.workspace.getLeftLeaf(false);
     await leaf.setViewState({
       type: VIEW_TYPE_PII,
       active: true,

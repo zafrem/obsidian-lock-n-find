@@ -173,11 +173,20 @@ UI -> User: Display masked text
   - Pattern testing
   - LLM role configuration
 
-### Side Window
-- Button to open Settings Window
-- Text showing last verified/scan time
-- Start/Stop scanning buttons
-- Find/Lock window controls
+### Side Window (Left Sidebar)
+- Mode toggle buttons (Scan Mode / Search Mode)
+- Scan Mode Controls:
+  - Scan Vault button
+  - Clear results button
+- Search Mode Controls:
+  - Search input field
+  - Search button
+- Drag & Drop Area:
+  - Visual drop zone for encryption
+  - Support for text selection drag-and-drop
+- Action buttons:
+  - Lock Selected (encryption)
+  - Unlock All (decryption)
 
 ### Status Bar
 - Indicator showing scanning status or completion
@@ -188,17 +197,30 @@ UI -> User: Display masked text
 - Invalid regex pattern handling
 - File access errors
 - Encryption/decryption failures
+- Memory leak prevention through proper event listener cleanup
+- Consistent error logging using standardized console methods
 
 ### User-Level Errors
-- Incorrect password for unmasking
-- No search results found
+- Incorrect password for unmasking with user-friendly notices
+- No search results found with clear messaging
+- Text not found in active file with descriptive feedback
 - Performance issues with complex patterns
+
+### Error Handling Standards
+- All errors logged using `console.error()` for consistency
+- User-facing errors display Notice dialogs
+- Warnings use `console.warn()` for non-critical issues
+- Timeout values defined as named constants for maintainability:
+  - `DRAGGABLE_SELECTION_TIMEOUT = 5000ms`
+  - `STATUS_MESSAGE_TIMEOUT = 3000ms`
 
 ## Performance & Security
 
 ### Performance Targets
 - Search completion < 5 seconds for 1000 notes
 - UI responsiveness during background operations
+- Memory leak prevention through proper event listener cleanup
+- Efficient drag-and-drop operations with minimal DOM manipulation
 
 ### Security Considerations
 - Encrypted storage of original sensitive data
@@ -256,3 +278,4 @@ UI -> User: Display masked text
 | Version | Date | Author | Changes |
 | --- | --- | --- | --- |
 | 0.1 | 2025-07-24 | | Draft document structure |
+| 0.2 | 2025-09-07 | | Updated with implementation improvements: sidebar integration, dual-mode operation, drag & drop functionality, memory leak fixes, error handling standardization, timeout constants |

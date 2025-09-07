@@ -7,6 +7,11 @@ import { scanVault, MatchInfo } from "../src/scanner";
 import { encrypt, decrypt } from "../src/crypto";
 
 export const VIEW_TYPE_PII = "pii-sidebar-view";
+
+// Constants for timeouts and UI behavior
+const DRAGGABLE_SELECTION_TIMEOUT = 5000; // 5 seconds
+const STATUS_MESSAGE_TIMEOUT = 3000; // 3 seconds
+
 const makeUUID = () =>
   (crypto as any).randomUUID?.() ??
   Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
@@ -218,6 +223,10 @@ export class PiiSidebarView extends ItemView {
   private selected: Set<number> = new Set();
   private cachedPassword: string | null = null;
   private currentMode: 'scan' | 'search' = 'scan';
+  
+  // Bound event handlers to prevent memory leaks
+  private boundHandleTextSelection = this.handleTextSelection.bind(this);
+  private boundHandleDragStart = this.handleDragStart.bind(this);
   constructor(leaf: WorkspaceLeaf, private plugin:PiiLockPlugin){super(leaf);}
   getViewType(){return VIEW_TYPE_PII;}
   getDisplayText(){return "Lock and Find";}
@@ -350,13 +359,13 @@ export class PiiSidebarView extends ItemView {
   /* -------- Text Selection Drag & Drop Setup -------- */
   private setupTextSelectionDragDrop() {
     // Add event listeners to detect text selection and enable dragging
-    document.addEventListener('mouseup', this.handleTextSelection.bind(this));
-    document.addEventListener('dragstart', this.handleDragStart.bind(this));
+    document.addEventListener('mouseup', this.boundHandleTextSelection);
+    document.addEventListener('dragstart', this.boundHandleDragStart);
   }
 
   private cleanupTextSelectionDragDrop() {
-    document.removeEventListener('mouseup', this.handleTextSelection.bind(this));
-    document.removeEventListener('dragstart', this.handleDragStart.bind(this));
+    document.removeEventListener('mouseup', this.boundHandleTextSelection);
+    document.removeEventListener('dragstart', this.boundHandleDragStart);
   }
 
   private handleTextSelection(event: MouseEvent) {
@@ -397,10 +406,10 @@ export class PiiSidebarView extends ItemView {
           }
           parent.removeChild(span);
         }
-      }, 5000);
+      }, DRAGGABLE_SELECTION_TIMEOUT);
       
     } catch (e) {
-      console.log('Could not make selection draggable:', e);
+      console.error('Could not make selection draggable:', e);
     }
   }
 
@@ -589,6 +598,7 @@ export class PiiSidebarView extends ItemView {
     const index = fileContent.indexOf(text);
     if (index === -1) {
       console.warn(`Text not found in active file: ${text.substring(0, 50)}`);
+      new Notice(`Text not found in active file: "${text.substring(0, 30)}${text.length > 30 ? '...' : ''}"`);
       return;
     }
     
@@ -827,7 +837,7 @@ export class PiiSidebarView extends ItemView {
         if (statusBar && statusBar.parentNode) {
           statusBar.remove();
         }
-      }, 3000);
+      }, STATUS_MESSAGE_TIMEOUT);
       
     } catch (error) {
       console.error("Decryption error:", error);
