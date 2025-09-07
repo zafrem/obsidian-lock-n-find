@@ -4,8 +4,8 @@
 	"description": "Lock & Find (Privacy)",
 	"main": "main.js",
 	"scripts": {
-    		"build": "esbuild main.ts --bundle --platform=browser --format=cjs --target=es2020 --outfile=main.js --external:obsidian",
-    		"dev": "esbuild main.ts --bundle --platform=browser --format=cjs --target=es2020 --outfile=main.js --external:obsidian --watch",
+    		"build": "node esbuild.config.mjs production",
+    		"dev": "node esbuild.config.mjs",
 		"version": "node version-bump.mjs && git add manifest.json versions.json"
 	},
 	"keywords": [],

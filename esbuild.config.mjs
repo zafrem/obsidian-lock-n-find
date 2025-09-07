@@ -1,6 +1,7 @@
 import esbuild from "esbuild";
 import process from "process";
 import builtins from "builtin-modules";
+import { copyFileSync } from "fs";
 
 const banner =
 `/*
@@ -10,6 +11,22 @@ if you want to view the source, please visit the github repository of this plugi
 `;
 
 const prod = (process.argv[2] === "production");
+
+// Plugin to copy additional files
+const copyFilesPlugin = {
+	name: 'copy-files',
+	setup(build) {
+		build.onEnd(() => {
+			// Copy the INI file to the output directory
+			try {
+				copyFileSync('default-patterns.ini', 'default-patterns.ini');
+				console.log('✓ Copied default-patterns.ini');
+			} catch (error) {
+				console.warn('Failed to copy default-patterns.ini:', error.message);
+			}
+		});
+	}
+};
 
 const context = await esbuild.context({
 	banner: {
@@ -39,6 +56,7 @@ const context = await esbuild.context({
 	treeShaking: true,
 	outfile: "main.js",
 	minify: prod,
+	plugins: [copyFilesPlugin],
 });
 
 if (prod) {
