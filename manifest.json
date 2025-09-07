@@ -1,8 +1,8 @@
 {
-	"id": "lock_n_find",
+	"id": "lock-n-find",
 	"name": "Lock & Find (Privacy)",
 	"version": "0.1.0",
-	"minAppVersion": "0.1.0",
+	"minAppVersion": "1.8.10",
 	"description": "Lock & Find (Privacy)",
 	"author": "Zafrem",
 	"authorUrl": "https://github.com/zafrem",
