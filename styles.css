@@ -401,6 +401,26 @@
   padding-left: 12px;
 }
 
+/* Additional styles for security fixes */
+.pii-hidden {
+  display: none !important;
+}
+
+.pii-draggable-text {
+  background-color: var(--text-selection);
+  cursor: grab;
+}
+
+.pii-tag-remove-button {
+  margin-left: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.pii-empty-icon {
+  opacity: 0.5;
+}
+
 /* Default Patterns section styling - scoped to our settings */
 .pii-settings-container .pii-country-buttons {
   margin: 12px 0;

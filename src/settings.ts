@@ -288,7 +288,7 @@ import {
     }
   
     private async handlePasswordChange(): Promise<void> {
-    const { PwModal } = await import("../ui/PiiSidebarView");
+    const { PwModal } = await import("../ui/LnFSidebarView");
     const modal = new PwModal(this.app, "Set Encryption Password", true);
     const password = await modal.wait();
     

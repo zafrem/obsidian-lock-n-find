@@ -1,7 +1,7 @@
-import { Plugin, WorkspaceLeaf, View } from "obsidian";
+import { Plugin, WorkspaceLeaf } from "obsidian";
 import { DEFAULT_SETTINGS, PiiSettings, PiiSettingTab } from "./src/settings";
 import { registerCommands } from "./src/commands";
-import { VIEW_TYPE_PII, PiiSidebarView } from "./ui/PiiSidebarView";
+import { VIEW_TYPE_PII, LnFSidebarView } from "./ui/LnFSidebarView";
 
 export default class PiiLockPlugin extends Plugin {
   settings: PiiSettings;
@@ -10,10 +10,10 @@ export default class PiiLockPlugin extends Plugin {
   async onload() {
     await this.loadSettings();
 
-    // Register the sidebar view with proper type casting
+    // Register the sidebar view
     this.registerView(
       VIEW_TYPE_PII,
-      (leaf: WorkspaceLeaf) => (new PiiSidebarView(leaf, this) as unknown) as View
+      (leaf: WorkspaceLeaf) => new LnFSidebarView(leaf, this)
     );
 
     // shield icon – sidebar toggle
@@ -25,7 +25,8 @@ export default class PiiLockPlugin extends Plugin {
   }
 
   onunload() {
-    this.app.workspace.detachLeavesOfType(VIEW_TYPE_PII);
+    // Don't detach leaves in onunload - this is an antipattern
+    // The workspace handles cleanup automatically
   }
 
   /* ──────────── Helpers ──────────── */

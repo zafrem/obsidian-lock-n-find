@@ -1,6 +1,6 @@
 import {
   ItemView, WorkspaceLeaf, MarkdownView,
-  Modal, Setting, Notice
+  Modal, Setting, Notice, App
 } from "obsidian";
 import type PiiLockPlugin from "../main";
 import { scanVault, MatchInfo } from "../src/scanner";
@@ -12,14 +12,107 @@ export const VIEW_TYPE_PII = "pii-sidebar-view";
 const DRAGGABLE_SELECTION_TIMEOUT = 5000; // 5 seconds
 const STATUS_MESSAGE_TIMEOUT = 3000; // 3 seconds
 
-const makeUUID = () =>
-  (crypto as any).randomUUID?.() ??
-  Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+const makeUUID = () => {
+  if ('randomUUID' in crypto && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+};
+
+// Helper functions to create SVG icons safely
+const createScanIcon = () => {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('width', '16');
+  svg.setAttribute('height', '16');
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('fill', 'currentColor');
+  path.setAttribute('d', 'M15.5,12C18,12 20,14 20,16.5C20,17.38 19.75,18.21 19.31,18.9L22.39,22L21,23.39L17.88,20.32C17.19,20.75 16.37,21 15.5,21C13,21 11,19 11,16.5C11,14 13,12 15.5,12M15.5,14A2.5,2.5 0 0,0 13,16.5A2.5,2.5 0 0,0 15.5,19A2.5,2.5 0 0,0 18,16.5A2.5,2.5 0 0,0 15.5,14M5,3H19C20.11,3 21,3.89 21,5V13.03C20.5,12.23 19.81,11.54 19,11V5H5V19H9.5C9.81,19.75 10.26,20.42 10.81,21H5C3.89,21 3,20.11 3,19V5C3,3.89 3.89,3 5,3M7,7H17V9H7V7M7,11H12.03C11.23,11.5 10.54,12.19 10,13H7V11M7,15H9.17C9.06,15.5 9,16 9,16.5V17H7V15Z');
+  svg.appendChild(path);
+  return svg;
+};
+
+const createSpinnerIcon = () => {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('width', '16');
+  svg.setAttribute('height', '16');
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('fill', 'currentColor');
+  path.setAttribute('d', 'M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z');
+  const animateTransform = document.createElementNS('http://www.w3.org/2000/svg', 'animateTransform');
+  animateTransform.setAttribute('attributeName', 'transform');
+  animateTransform.setAttribute('attributeType', 'XML');
+  animateTransform.setAttribute('type', 'rotate');
+  animateTransform.setAttribute('dur', '1s');
+  animateTransform.setAttribute('from', '0 12 12');
+  animateTransform.setAttribute('to', '360 12 12');
+  animateTransform.setAttribute('repeatCount', 'indefinite');
+  path.appendChild(animateTransform);
+  svg.appendChild(path);
+  return svg;
+};
+
+const createClearIcon = () => {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('width', '16');
+  svg.setAttribute('height', '16');
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('fill', 'currentColor');
+  path.setAttribute('d', 'M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z');
+  svg.appendChild(path);
+  return svg;
+};
+
+const createLockIcon = () => {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('width', '16');
+  svg.setAttribute('height', '16');
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('fill', 'currentColor');
+  path.setAttribute('d', 'M12,17A2,2 0 0,0 14,15C14,13.89 13.1,13 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.9,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z');
+  svg.appendChild(path);
+  return svg;
+};
+
+const createUnlockIcon = () => {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('width', '16');
+  svg.setAttribute('height', '16');
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('fill', 'currentColor');
+  path.setAttribute('d', 'M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6C4.89,22 4,21.1 4,20V10A2,2 0 0,1 6,8H15V6A3,3 0 0,0 12,3A3,3 0 0,0 9,6H7A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,17A2,2 0 0,0 14,15A2,2 0 0,0 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17Z');
+  svg.appendChild(path);
+  return svg;
+};
+
+const createEmptyStateIcon = () => {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('width', '32');
+  svg.setAttribute('height', '32');
+  svg.addClass('pii-empty-icon');
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('fill', 'currentColor');
+  path.setAttribute('d', 'M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,10.5A1.5,1.5 0 0,0 10.5,12A1.5,1.5 0 0,0 12,13.5A1.5,1.5 0 0,0 13.5,12A1.5,1.5 0 0,0 12,10.5M7.5,10.5A1.5,1.5 0 0,0 6,12A1.5,1.5 0 0,0 7.5,13.5A1.5,1.5 0 0,0 9,12A1.5,1.5 0 0,0 7.5,10.5M16.5,10.5A1.5,1.5 0 0,0 15,12A1.5,1.5 0 0,0 16.5,13.5A1.5,1.5 0 0,0 18,12A1.5,1.5 0 0,0 16.5,10.5Z');
+  svg.appendChild(path);
+  return svg;
+};
+
+const createButtonContent = (icon: SVGElement, text: string) => {
+  const fragment = document.createDocumentFragment();
+  fragment.appendChild(icon);
+  fragment.appendChild(document.createTextNode(` ${text}`));
+  return fragment;
+};
 
 /* Password Modal with improved UI */
 export class PwModal extends Modal {
   private _resolve!: (v: string | null) => void;
-  constructor(app: any, private title: string, private isEncrypt: boolean = false) { super(app); }
+  constructor(app: App, private title: string, private isEncrypt: boolean = false) { super(app); }
 
   onOpen() {
     const { containerEl } = this;
@@ -36,7 +129,7 @@ export class PwModal extends Modal {
       cls: "pii-modal-title"
     });
     const icon = this.isEncrypt ? "🔒" : "🔓";
-    titleEl.innerHTML = `${icon} ${this.title}`;
+    titleEl.textContent = `${icon} ${this.title}`;
     
     // Add description
     const description = this.isEncrypt 
@@ -216,7 +309,7 @@ export class PwModal extends Modal {
 
 
 /* ── Sidebar View ─ */
-export class PiiSidebarView extends ItemView {
+export class LnFSidebarView extends ItemView {
   private matches: MatchInfo[] = [];
   private searchResults: MatchInfo[] = [];
   private manualSelections: {text: string, id: string}[] = [];
@@ -268,20 +361,22 @@ export class PiiSidebarView extends ItemView {
     
     // Scan button with icon
     const scan = scanControls.createEl("button", {cls: "pii-btn-primary pii-btn-half"});
-    scan.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M15.5,12C18,12 20,14 20,16.5C20,17.38 19.75,18.21 19.31,18.9L22.39,22L21,23.39L17.88,20.32C17.19,20.75 16.37,21 15.5,21C13,21 11,19 11,16.5C11,14 13,12 15.5,12M15.5,14A2.5,2.5 0 0,0 13,16.5A2.5,2.5 0 0,0 15.5,19A2.5,2.5 0 0,0 18,16.5A2.5,2.5 0 0,0 15.5,14M5,3H19C20.11,3 21,3.89 21,5V13.03C20.5,12.23 19.81,11.54 19,11V5H5V19H9.5C9.81,19.75 10.26,20.42 10.81,21H5C3.89,21 3,20.11 3,19V5C3,3.89 3.89,3 5,3M7,7H17V9H7V7M7,11H12.03C11.23,11.5 10.54,12.19 10,13H7V11M7,15H9.17C9.06,15.5 9,16 9,16.5V17H7V15Z"></path></svg> Scan Vault';
+    scan.appendChild(createButtonContent(createScanIcon(), 'Scan Vault'));
     
     // Clear button with icon
     const clear = scanControls.createEl("button", {cls: "pii-btn-secondary pii-btn-half"});
-    clear.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"></path></svg> Clear';
+    clear.appendChild(createButtonContent(createClearIcon(), 'Clear'));
     
     scan.onclick = async () => {
       scan.disabled = true;
-      scan.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z"><animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="1s" from="0 12 12" to="360 12 12" repeatCount="indefinite" /></path></svg> Scanning...';
+      scan.empty();
+      scan.appendChild(createButtonContent(createSpinnerIcon(), 'Scanning...'));
       this.matches = await scanVault(this.plugin);
       this.selected.clear();
       this.render();
       scan.disabled = false;
-      scan.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M15.5,12C18,12 20,14 20,16.5C20,17.38 19.75,18.21 19.31,18.9L22.39,22L21,23.39L17.88,20.32C17.19,20.75 16.37,21 15.5,21C13,21 11,19 11,16.5C11,14 13,12 15.5,12M15.5,14A2.5,2.5 0 0,0 13,16.5A2.5,2.5 0 0,0 15.5,19A2.5,2.5 0 0,0 18,16.5A2.5,2.5 0 0,0 15.5,14M5,3H19C20.11,3 21,3.89 21,5V13.03C20.5,12.23 19.81,11.54 19,11V5H5V19H9.5C9.81,19.75 10.26,20.42 10.81,21H5C3.89,21 3,20.11 3,19V5C3,3.89 3.89,3 5,3M7,7H17V9H7V7M7,11H12.03C11.23,11.5 10.54,12.19 10,13H7V11M7,15H9.17C9.06,15.5 9,16 9,16.5V17H7V15Z"></path></svg> Scan Vault';
+      scan.empty();
+      scan.appendChild(createButtonContent(createScanIcon(), 'Scan Vault'));
     };
     
     clear.onclick = () => {
@@ -301,7 +396,7 @@ export class PiiSidebarView extends ItemView {
     });
     
     const searchBtn = searchContainer.createEl("button", {cls: "pii-btn-primary"});
-    searchBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M15.5,12C18,12 20,14 20,16.5C20,17.38 19.75,18.21 19.31,18.9L22.39,22L21,23.39L17.88,20.32C17.19,20.75 16.37,21 15.5,21C13,21 11,19 11,16.5C11,14 13,12 15.5,12M15.5,14A2.5,2.5 0 0,0 13,16.5A2.5,2.5 0 0,0 15.5,19A2.5,2.5 0 0,0 18,16.5A2.5,2.5 0 0,0 15.5,14Z"></path></svg> Search';
+    searchBtn.appendChild(createButtonContent(createScanIcon(), 'Search'));
 
     searchBtn.onclick = async () => {
       const query = searchInput.value.trim();
@@ -311,14 +406,16 @@ export class PiiSidebarView extends ItemView {
       }
       
       searchBtn.disabled = true;
-      searchBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z"><animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="1s" from="0 12 12" to="360 12 12" repeatCount="indefinite" /></path></svg> Searching...';
+      searchBtn.empty();
+      searchBtn.appendChild(createButtonContent(createSpinnerIcon(), 'Searching...'));
       
       this.searchResults = await this.searchVault(query);
       this.selected.clear();
       this.render();
       
       searchBtn.disabled = false;
-      searchBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M15.5,12C18,12 20,14 20,16.5C20,17.38 19.75,18.21 19.31,18.9L22.39,22L21,23.39L17.88,20.32C17.19,20.75 16.37,21 15.5,21C13,21 11,19 11,16.5C11,14 13,12 15.5,12M15.5,14A2.5,2.5 0 0,0 13,16.5A2.5,2.5 0 0,0 15.5,19A2.5,2.5 0 0,0 18,16.5A2.5,2.5 0 0,0 15.5,14Z"></path></svg> Search';
+      searchBtn.empty();
+      searchBtn.appendChild(createButtonContent(createScanIcon(), 'Search'));
     };
 
     // Handle Enter key in search input
@@ -343,12 +440,12 @@ export class PiiSidebarView extends ItemView {
     
     // Lock button with icon
     const lockBtn = bot.createEl("button",{cls:"pii-btn-primary pii-btn-half"});
-    lockBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12,17A2,2 0 0,0 14,15C14,13.89 13.1,13 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.9,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z"></path></svg> Lock Selected';
+    lockBtn.appendChild(createButtonContent(createLockIcon(), 'Lock Selected'));
     lockBtn.onclick=()=>this.lock();
     
     // Unlock button with icon
     const unlockBtn = bot.createEl("button",{cls:"pii-btn-secondary pii-btn-half"});
-    unlockBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6C4.89,22 4,21.1 4,20V10A2,2 0 0,1 6,8H15V6A3,3 0 0,0 12,3A3,3 0 0,0 9,6H7A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,17A2,2 0 0,0 14,15A2,2 0 0,0 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17Z"></path></svg> Unlock All';
+    unlockBtn.appendChild(createButtonContent(createUnlockIcon(), 'Unlock All'));
     unlockBtn.onclick=()=>this.unlock();
   }
   async onClose(){
@@ -388,8 +485,7 @@ export class PiiSidebarView extends ItemView {
     try {
       const span = document.createElement('span');
       span.draggable = true;
-      span.style.backgroundColor = 'var(--text-selection)';
-      span.style.cursor = 'grab';
+      span.addClass('pii-draggable-text');
       span.title = 'Drag to encrypt this text';
       
       // Store the selected text data for drag and drop
@@ -464,10 +560,10 @@ export class PiiSidebarView extends ItemView {
     
     // Show/hide controls based on mode
     if (searchContainer) {
-      searchContainer.style.display = this.currentMode === 'search' ? 'flex' : 'none';
+      searchContainer.toggleClass('pii-hidden', this.currentMode !== 'search');
     }
     if (scanControls) {
-      scanControls.style.display = this.currentMode === 'scan' ? 'flex' : 'none';
+      scanControls.toggleClass('pii-hidden', this.currentMode !== 'scan');
     }
     
     // Clear previous content
@@ -484,8 +580,8 @@ export class PiiSidebarView extends ItemView {
 
     // Show empty state if no results
     if(!currentResults.length){
-      list.createEl("div", {cls: "pii-empty"});
-      list.createEl("div", {cls: "pii-empty"}).innerHTML = '<svg viewBox="0 0 24 24" width="32" height="32" style="opacity: 0.5"><path fill="currentColor" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,10.5A1.5,1.5 0 0,0 10.5,12A1.5,1.5 0 0,0 12,13.5A1.5,1.5 0 0,0 13.5,12A1.5,1.5 0 0,0 12,10.5M7.5,10.5A1.5,1.5 0 0,0 6,12A1.5,1.5 0 0,0 7.5,13.5A1.5,1.5 0 0,0 9,12A1.5,1.5 0 0,0 7.5,10.5M16.5,10.5A1.5,1.5 0 0,0 15,12A1.5,1.5 0 0,0 16.5,13.5A1.5,1.5 0 0,0 18,12A1.5,1.5 0 0,0 16.5,10.5Z"></path></svg>';
+      const emptyContainer = list.createEl("div", {cls: "pii-empty"});
+      emptyContainer.appendChild(createEmptyStateIcon());
       list.createEl("p", {text: emptyMessage});
       return;
     }
@@ -540,10 +636,7 @@ export class PiiSidebarView extends ItemView {
         tag.textContent = currentResults[i].text;
         
         // Add a remove button to the tag
-        const removeBtn = tag.createEl("span", {cls: "pii-tag-remove", text: "×"});
-        removeBtn.style.marginLeft = "4px";
-        removeBtn.style.cursor = "pointer";
-        removeBtn.style.fontWeight = "bold";
+        const removeBtn = tag.createEl("span", {cls: "pii-tag-remove pii-tag-remove-button", text: "×"});
         
         removeBtn.onclick = (evt) => {
           evt.stopPropagation();
@@ -568,10 +661,7 @@ export class PiiSidebarView extends ItemView {
     tag.setAttribute('data-manual-id', id);
     
     // Add a remove button to the tag
-    const removeBtn = tag.createEl("span", {cls: "pii-tag-remove", text: "×"});
-    removeBtn.style.marginLeft = "4px";
-    removeBtn.style.cursor = "pointer";
-    removeBtn.style.fontWeight = "bold";
+    const removeBtn = tag.createEl("span", {cls: "pii-tag-remove pii-tag-remove-button", text: "×"});
     
     removeBtn.onclick = (evt) => {
       evt.stopPropagation();
