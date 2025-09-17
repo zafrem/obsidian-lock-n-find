@@ -281,7 +281,8 @@ import {
   /* ──────────────── Setting Tab ──────────────── */
   export class PiiSettingTab extends PluginSettingTab {
     plugin: PiiLockPlugin;
-  
+    private managePatternsSectionOpen: boolean = true; // Track the open state
+
     constructor(app: App, plugin: PiiLockPlugin) {
       super(app, plugin);
       this.plugin = plugin;
@@ -319,8 +320,14 @@ import {
 
       // Create collapsible Manage Patterns section
       const patternsHeader = containerEl.createEl("details");
+      patternsHeader.open = this.managePatternsSectionOpen; // Restore the open state
       patternsHeader.createEl("summary", { text: "Manage Patterns", cls: "pii-collapsible-header" });
       const patternsContainer = patternsHeader.createDiv("pii-patterns-container");
+
+      // Save the open state when toggled
+      patternsHeader.addEventListener('toggle', () => {
+        this.managePatternsSectionOpen = patternsHeader.open;
+      });
 
       // Load default patterns
       const defaultPatternsContent = await loadDefaultPatternsFromFile(this.plugin);

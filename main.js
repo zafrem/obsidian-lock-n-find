@@ -954,8 +954,10 @@ async function updatePatternInINI(plugin, oldPattern, newPattern, source, defaul
   }
 }
 var PiiSettingTab = class extends import_obsidian2.PluginSettingTab {
+  // Track the open state
   constructor(app, plugin) {
     super(app, plugin);
+    this.managePatternsSectionOpen = true;
     this.plugin = plugin;
   }
   async handlePasswordChange() {
@@ -982,8 +984,12 @@ var PiiSettingTab = class extends import_obsidian2.PluginSettingTab {
     const { containerEl } = this;
     containerEl.addClass("pii-settings-container");
     const patternsHeader = containerEl.createEl("details");
+    patternsHeader.open = this.managePatternsSectionOpen;
     patternsHeader.createEl("summary", { text: "Manage Patterns", cls: "pii-collapsible-header" });
     const patternsContainer = patternsHeader.createDiv("pii-patterns-container");
+    patternsHeader.addEventListener("toggle", () => {
+      this.managePatternsSectionOpen = patternsHeader.open;
+    });
     const defaultPatternsContent = await loadDefaultPatternsFromFile(this.plugin);
     const defaultPatterns = parseDefaultPatterns(defaultPatternsContent);
     if (!this.plugin.settings.patternMetadata) {
