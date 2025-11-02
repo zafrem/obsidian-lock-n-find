@@ -1,4 +1,6 @@
 import type { CountryPattern } from "../utils/countryPatterns";
+import type { ApiSettings, KeyInfo } from "../api/types";
+import { DEFAULT_API_SETTINGS } from "../api/types";
 
 /* ──────────────── Type and Default Value ──────────────── */
 export interface PatternWithMetadata {
@@ -14,6 +16,8 @@ export interface PiiSettings {
   storedPassword?: string;     // Temporarily stored password (hashed)
   defaultPatterns: string;     // INI format string with country-specific patterns
   selectedCountries: string[]; // List of selected countries
+  api: ApiSettings;            // API configuration
+  apiKeys: KeyInfo[];          // API keys storage
 }
 
 export const DEFAULT_SETTINGS: PiiSettings = {
@@ -26,4 +30,6 @@ export const DEFAULT_SETTINGS: PiiSettings = {
   storedPassword: undefined,
   defaultPatterns: "", // Will be loaded from external file
   selectedCountries: [], // No countries selected by default
+  api: DEFAULT_API_SETTINGS,
+  apiKeys: [],
 };

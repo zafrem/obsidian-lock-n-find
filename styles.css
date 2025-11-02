@@ -448,3 +448,229 @@
   font-size: 0.9em;
 }
 
+/* ============================================
+   Mobile Responsive Styles
+   ============================================ */
+
+/* Mobile viewport adjustments */
+@media (max-width: 768px) {
+  /* Increase touch target sizes for mobile */
+  .pii-btn-bar button,
+  .pii-btn-bar-bottom button {
+    padding: 12px 16px;
+    font-size: 16px;
+    min-height: 44px; /* iOS recommended touch target */
+  }
+
+  .pii-mode-toggle button {
+    padding: 12px 16px;
+    font-size: 16px;
+    min-height: 44px;
+  }
+
+  .pii-search-container button {
+    min-height: 44px;
+    padding: 10px 16px;
+  }
+
+  /* Adjust spacing for smaller screens */
+  .pii-btn-bar,
+  .pii-btn-bar-bottom,
+  .pii-mode-toggle,
+  .pii-scan-controls,
+  .pii-search-container {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  /* Drop area adjustments */
+  .pii-drop {
+    min-height: 120px;
+    padding: 20px 12px;
+    margin: 12px;
+  }
+
+  .pii-drop-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+  }
+
+  /* List item adjustments for touch */
+  .pii-row {
+    padding: 16px 12px;
+    margin-bottom: 8px;
+    min-height: 56px;
+    flex-wrap: wrap;
+  }
+
+  .pii-row-text {
+    flex: 1 1 100%;
+    margin-bottom: 8px;
+    font-size: 16px;
+  }
+
+  .pii-row-location {
+    flex: 1 1 100%;
+    font-size: 14px;
+  }
+
+  /* Modal adjustments */
+  .pii-modal {
+    max-width: 100%;
+    margin: 0;
+  }
+
+  .pii-modal-content {
+    max-width: 100%;
+    padding: 16px;
+    border-radius: 0;
+  }
+
+  .pii-modal-title {
+    font-size: 1.4em;
+  }
+
+  .pii-modal-description {
+    font-size: 1em;
+  }
+
+  .pii-password-input {
+    font-size: 16px; /* Prevents zoom on iOS */
+    min-height: 44px;
+    padding: 10px 40px 10px 12px;
+  }
+
+  .pii-search-input {
+    font-size: 16px;
+    min-height: 44px;
+    padding: 10px 12px;
+  }
+
+  .pii-modal-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .pii-modal-buttons button {
+    width: 100%;
+    min-height: 44px;
+    padding: 12px 16px;
+    font-size: 16px;
+  }
+
+  /* Status bar adjustments */
+  .pii-status {
+    bottom: 16px;
+    left: 12px;
+    right: 12px;
+    transform: none;
+    max-width: none;
+    font-size: 14px;
+  }
+
+  /* Tag adjustments */
+  .pii-tag {
+    padding: 8px 12px;
+    margin: 6px 4px;
+    font-size: 14px;
+  }
+
+  /* Settings adjustments */
+  .pii-settings-container .pii-patterns-container {
+    max-height: none;
+    padding-left: 8px;
+  }
+
+  .pii-settings-container .pii-country-buttons .setting-item {
+    padding: 16px 12px;
+  }
+
+  /* List scrolling on mobile */
+  .pii-list {
+    max-height: none;
+    margin: 8px 0;
+  }
+}
+
+/* Extra small devices (phones in portrait, less than 400px) */
+@media (max-width: 400px) {
+  .pii-btn-bar,
+  .pii-btn-bar-bottom,
+  .pii-mode-toggle,
+  .pii-scan-controls {
+    flex-direction: column;
+  }
+
+  .pii-btn-half {
+    width: 100%;
+  }
+
+  .pii-search-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pii-search-input {
+    width: 100%;
+  }
+
+  .pii-row-text {
+    font-size: 14px;
+  }
+
+  .pii-row-location {
+    font-size: 12px;
+  }
+}
+
+/* Large mobile/small tablet (landscape) */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .pii-modal-content {
+    max-width: 500px;
+    margin: 0 auto;
+  }
+}
+
+/* Touch device specific adjustments */
+@media (hover: none) and (pointer: coarse) {
+  /* Increase all interactive element sizes for touch */
+  button {
+    min-height: 44px;
+  }
+
+  .pii-tag-remove-button {
+    padding: 8px;
+    margin-left: 8px;
+    min-width: 32px;
+    min-height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .pii-password-toggle {
+    min-width: 44px;
+    min-height: 44px;
+    right: 4px;
+  }
+
+  /* Remove hover states on touch devices */
+  .pii-row:hover {
+    background: var(--background-secondary);
+  }
+
+  .pii-row:active {
+    background: var(--background-modifier-hover);
+  }
+}
+
+/* Improve accessibility for mobile */
+@media (prefers-reduced-motion: reduce) {
+  .pii-btn-bar button:hover,
+  .pii-btn-bar-bottom button:hover,
+  .pii-row,
+  .pii-status {
+    transition: none;
+  }
+}
+

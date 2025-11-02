@@ -1,0 +1,19 @@
+# Simple Pattern File Format
+# Format: Name | Regex | Description
+# Lines starting with # are comments
+
+Email | [a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,} | Email addresses
+US Phone | \d{3}[-.]?\d{3}[-.]?\d{4} | US phone numbers
+Credit Card | \d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4} | Credit card numbers
+SSN | \d{3}-\d{2}-\d{4} | US Social Security Number
+Korean ID | \d{6}-\d{7} | Korean resident number
+Korean Phone | 010[-\s]?\d{4}[-\s]?\d{4} | Korean mobile
+IPv4 | \b(?:\d{1,3}\.){3}\d{1,3}\b | IP addresses
+API Key | [a-zA-Z0-9]{32,64} | Long API keys
+Password | (password|pwd|pass)\s*[:=]\s*\S+ | Password fields
+URL | https?://[^\s]+ | Web URLs
+Date | \d{4}-\d{2}-\d{2} | ISO date format
+Bitcoin | [13][a-km-zA-HJ-NP-Z1-9]{25,34} | Bitcoin address
+Ethereum | 0x[a-fA-F0-9]{40} | Ethereum address
+MAC Address | ([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}) | MAC address
+UUID | [0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12} | UUID format

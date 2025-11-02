@@ -1,0 +1,33 @@
+{
+  "name": "lock-n-find-api-tests",
+  "version": "1.0.0",
+  "description": "External test suite for Lock & Find API",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "build": "tsc",
+    "lint": "eslint src --ext .ts"
+  },
+  "keywords": [
+    "lock-n-find",
+    "api",
+    "testing"
+  ],
+  "author": "Zafrem",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^29.5.11",
+    "@types/node": "^20.10.6",
+    "@typescript-eslint/eslint-plugin": "^6.17.0",
+    "@typescript-eslint/parser": "^6.17.0",
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "axios": "^1.6.5"
+  }
+}

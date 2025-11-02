@@ -6,5 +6,6 @@
 	"description": "Lock & Find (Privacy)",
 	"author": "Zafrem",
 	"authorUrl": "https://github.com/zafrem",
-	"isDesktopOnly": true	  
+	"fundingUrl": "https://github.com/sponsors/zafrem",
+	"isDesktopOnly": false	  
 }

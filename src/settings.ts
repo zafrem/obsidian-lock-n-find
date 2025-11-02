@@ -636,6 +636,110 @@ phone=
               })
           );
       }
+
+      // API Settings Section
+      containerEl.createEl("hr");
+      containerEl.createEl("h2", { text: "API Settings" });
+      containerEl.createEl("p", {
+        text: "Enable external API access for programmatic search and encryption operations",
+        cls: "setting-item-description"
+      });
+
+      // API Enable/Disable
+      new Setting(containerEl)
+        .setName("Enable API Server")
+        .setDesc("Allow external applications to access Lock & Find via REST API")
+        .addToggle((toggle) =>
+          toggle
+            .setValue(this.plugin.settings.api.enabled)
+            .onChange(async (value) => {
+              this.plugin.settings.api.enabled = value;
+              await this.plugin.saveSettings();
+
+              if (value) {
+                await this.plugin.startApiServer();
+                new Notice("API server started");
+              } else {
+                await this.plugin.stopApiServer();
+                new Notice("API server stopped");
+              }
+
+              this.display(); // Refresh to show/hide API settings
+            })
+        );
+
+      // Show additional settings only if API is enabled
+      if (this.plugin.settings.api.enabled) {
+        // API Port
+        new Setting(containerEl)
+          .setName("API Port")
+          .setDesc("Port number for the API server (requires restart)")
+          .addText((text) =>
+            text
+              .setPlaceholder("27750")
+              .setValue(String(this.plugin.settings.api.port))
+              .onChange(async (value) => {
+                const port = parseInt(value);
+                if (port > 0 && port < 65536) {
+                  this.plugin.settings.api.port = port;
+                  await this.plugin.saveSettings();
+                }
+              })
+          );
+
+        // Rate Limiting
+        new Setting(containerEl)
+          .setName("Rate Limit")
+          .setDesc("Maximum requests per minute per API key")
+          .addText((text) =>
+            text
+              .setPlaceholder("100")
+              .setValue(String(this.plugin.settings.api.rateLimit.maxRequests))
+              .onChange(async (value) => {
+                const limit = parseInt(value);
+                if (limit > 0) {
+                  this.plugin.settings.api.rateLimit.maxRequests = limit;
+                  await this.plugin.saveSettings();
+                }
+              })
+          );
+
+        // Request Logging
+        new Setting(containerEl)
+          .setName("Log API Requests")
+          .setDesc("Keep a log of all API requests for debugging")
+          .addToggle((toggle) =>
+            toggle
+              .setValue(this.plugin.settings.api.logRequests)
+              .onChange(async (value) => {
+                this.plugin.settings.api.logRequests = value;
+                await this.plugin.saveSettings();
+              })
+          );
+
+        // API Key Management
+        new Setting(containerEl)
+          .setName("API Keys")
+          .setDesc("Manage API keys for authentication")
+          .addButton((btn) =>
+            btn
+              .setButtonText("Manage Keys")
+              .setCta()
+              .onClick(async () => {
+                const { ApiKeyModal } = await import("./ui/ApiKeyModal");
+                new ApiKeyModal(this.app, this.plugin).open();
+              })
+          );
+
+        // API Status
+        const apiServer = this.plugin.getApiServer();
+        const isRunning = apiServer?.isServerRunning() || false;
+        const statusText = isRunning ? "✅ API Server Running" : "⭕ API Server Stopped";
+        containerEl.createEl("p", {
+          text: statusText,
+          cls: isRunning ? "pii-status-active" : "pii-status-inactive"
+        });
+      }
     }
   }
   

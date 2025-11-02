@@ -1,0 +1,16 @@
+name,regex,description,enabled,category
+Email Address,[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,},Email addresses,true,common
+US Phone Number,\d{3}[-.]?\d{3}[-.]?\d{4},US phone format,true,phone
+Credit Card,\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4},Credit card number,false,financial
+SSN,\d{3}-\d{2}-\d{4},Social Security Number,false,government
+Korean ID,\d{6}-\d{7},Korean resident number,false,government
+Korean Phone,010[-\s]?\d{4}[-\s]?\d{4},Korean mobile phone,false,phone
+IPv4 Address,\b(?:\d{1,3}\.){3}\d{1,3}\b,IP address,false,technical
+API Key,[a-zA-Z0-9]{32,64},Long alphanumeric string,false,technical
+Password Field,(password|pwd|pass)\s*[:=]\s*\S+,Password assignment,false,security
+URL,https?://[^\s]+,Web URL,false,common
+Date Format,\d{4}-\d{2}-\d{2},ISO date YYYY-MM-DD,false,common
+Bitcoin Address,[13][a-km-zA-HJ-NP-Z1-9]{25,34},BTC address,false,crypto
+Ethereum Address,0x[a-fA-F0-9]{40},ETH address,false,crypto
+MAC Address,([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}),MAC address,false,technical
+UUID,[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12},UUID format,false,technical

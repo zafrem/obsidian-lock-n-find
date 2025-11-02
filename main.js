@@ -812,16 +812,514 @@ var init_LnFSidebarView = __esm({
   }
 });
 
+// src/ui/ApiKeyModal.ts
+var ApiKeyModal_exports = {};
+__export(ApiKeyModal_exports, {
+  ApiKeyModal: () => ApiKeyModal
+});
+var import_obsidian2, ApiKeyModal, KeyNameModal, KeyDisplayModal, ConfirmModal;
+var init_ApiKeyModal = __esm({
+  "src/ui/ApiKeyModal.ts"() {
+    import_obsidian2 = require("obsidian");
+    ApiKeyModal = class extends import_obsidian2.Modal {
+      constructor(app, plugin) {
+        super(app);
+        this.plugin = plugin;
+      }
+      onOpen() {
+        const { contentEl } = this;
+        contentEl.empty();
+        contentEl.addClass("pii-modal");
+        contentEl.createEl("h2", { text: "API Key Management" });
+        contentEl.createEl("p", {
+          text: "Generate and manage API keys for external access to Lock & Find.",
+          cls: "pii-modal-description"
+        });
+        new import_obsidian2.Setting(contentEl).setName("Generate New API Key").setDesc("Create a new API key for authentication").addButton(
+          (btn) => btn.setButtonText("Generate Key").setCta().onClick(async () => {
+            await this.generateNewKey();
+          })
+        );
+        contentEl.createEl("hr");
+        contentEl.createEl("h3", { text: "Existing API Keys" });
+        this.keysList = contentEl.createDiv("pii-keys-list");
+        this.renderKeys();
+        const buttonContainer = contentEl.createDiv({ cls: "pii-modal-buttons" });
+        buttonContainer.createEl("button", { text: "Close", cls: "pii-btn-primary" }).onclick = () => this.close();
+      }
+      renderKeys() {
+        this.keysList.empty();
+        const apiServer = this.plugin.getApiServer();
+        if (!apiServer) {
+          this.keysList.createEl("p", {
+            text: "API server not initialized",
+            cls: "pii-text-muted"
+          });
+          return;
+        }
+        const keys = apiServer.getKeyManager().listKeys();
+        if (keys.length === 0) {
+          this.keysList.createEl("p", {
+            text: "No API keys created yet",
+            cls: "pii-text-muted"
+          });
+          return;
+        }
+        keys.forEach((key) => {
+          const keyItem = this.keysList.createDiv("pii-key-item");
+          const keyInfo = keyItem.createDiv("pii-key-info");
+          keyInfo.createEl("strong", { text: key.name });
+          keyInfo.createEl("div", {
+            text: `Created: ${new Date(key.createdAt).toLocaleString()}`,
+            cls: "pii-text-small"
+          });
+          if (key.lastUsed) {
+            keyInfo.createEl("div", {
+              text: `Last used: ${new Date(key.lastUsed).toLocaleString()}`,
+              cls: "pii-text-small"
+            });
+          }
+          keyInfo.createEl("div", {
+            text: `Usage count: ${key.usageCount}`,
+            cls: "pii-text-small"
+          });
+          const status = keyItem.createEl("span", {
+            cls: key.enabled ? "pii-status-active" : "pii-status-inactive",
+            text: key.enabled ? "Active" : "Revoked"
+          });
+          const actions = keyItem.createDiv("pii-key-actions");
+          if (key.enabled) {
+            const revokeBtn = actions.createEl("button", {
+              text: "Revoke",
+              cls: "pii-btn-warning"
+            });
+            revokeBtn.onclick = async () => {
+              await this.revokeKey(key);
+            };
+          }
+          const deleteBtn = actions.createEl("button", {
+            text: "Delete",
+            cls: "pii-btn-danger"
+          });
+          deleteBtn.onclick = async () => {
+            await this.deleteKey(key);
+          };
+        });
+      }
+      async generateNewKey() {
+        const apiServer = this.plugin.getApiServer();
+        if (!apiServer) {
+          new import_obsidian2.Notice("API server not initialized");
+          return;
+        }
+        const name = await this.promptForKeyName();
+        if (!name)
+          return;
+        try {
+          const rawKey = await apiServer.getKeyManager().generateKey(name);
+          this.plugin.settings.apiKeys = apiServer.getKeyManager().serializeKeys();
+          await this.plugin.saveSettings();
+          this.showKeyModal(rawKey, name);
+          this.renderKeys();
+          new import_obsidian2.Notice(`API key "${name}" generated successfully`);
+        } catch (error) {
+          console.error("Failed to generate API key:", error);
+          new import_obsidian2.Notice("Failed to generate API key");
+        }
+      }
+      async revokeKey(key) {
+        const apiServer = this.plugin.getApiServer();
+        if (!apiServer)
+          return;
+        const confirmed = await this.confirmAction(
+          `Are you sure you want to revoke the key "${key.name}"? It will no longer be usable.`
+        );
+        if (!confirmed)
+          return;
+        try {
+          await apiServer.getKeyManager().revokeKey(key.id);
+          this.plugin.settings.apiKeys = apiServer.getKeyManager().serializeKeys();
+          await this.plugin.saveSettings();
+          this.renderKeys();
+          new import_obsidian2.Notice(`API key "${key.name}" revoked`);
+        } catch (error) {
+          console.error("Failed to revoke API key:", error);
+          new import_obsidian2.Notice("Failed to revoke API key");
+        }
+      }
+      async deleteKey(key) {
+        const apiServer = this.plugin.getApiServer();
+        if (!apiServer)
+          return;
+        const confirmed = await this.confirmAction(
+          `Are you sure you want to permanently delete the key "${key.name}"? This action cannot be undone.`
+        );
+        if (!confirmed)
+          return;
+        try {
+          await apiServer.getKeyManager().deleteKey(key.id);
+          this.plugin.settings.apiKeys = apiServer.getKeyManager().serializeKeys();
+          await this.plugin.saveSettings();
+          this.renderKeys();
+          new import_obsidian2.Notice(`API key "${key.name}" deleted`);
+        } catch (error) {
+          console.error("Failed to delete API key:", error);
+          new import_obsidian2.Notice("Failed to delete API key");
+        }
+      }
+      async promptForKeyName() {
+        return new Promise((resolve) => {
+          const modal = new KeyNameModal(this.app, (name) => resolve(name));
+          modal.open();
+        });
+      }
+      showKeyModal(key, name) {
+        new KeyDisplayModal(this.app, key, name).open();
+      }
+      async confirmAction(message) {
+        return new Promise((resolve) => {
+          const modal = new ConfirmModal(
+            this.app,
+            message,
+            (confirmed) => resolve(confirmed)
+          );
+          modal.open();
+        });
+      }
+      onClose() {
+        this.contentEl.empty();
+      }
+    };
+    KeyNameModal = class extends import_obsidian2.Modal {
+      constructor(app, onSubmit) {
+        super(app);
+        this.onSubmit = onSubmit;
+      }
+      onOpen() {
+        const { contentEl } = this;
+        contentEl.empty();
+        contentEl.addClass("pii-modal");
+        contentEl.createEl("h3", { text: "Enter Key Name" });
+        contentEl.createEl("p", {
+          text: "Give this API key a descriptive name",
+          cls: "pii-modal-description"
+        });
+        this.nameInput = contentEl.createEl("input", {
+          type: "text",
+          placeholder: "e.g., Desktop App, Mobile Device",
+          cls: "pii-input-full"
+        });
+        this.nameInput.focus();
+        this.nameInput.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            this.submit();
+          } else if (e.key === "Escape") {
+            this.close();
+          }
+        });
+        const buttonContainer = contentEl.createDiv({ cls: "pii-modal-buttons" });
+        buttonContainer.createEl("button", { text: "Cancel", cls: "pii-btn-secondary" }).onclick = () => {
+          this.onSubmit(null);
+          this.close();
+        };
+        buttonContainer.createEl("button", { text: "Create", cls: "pii-btn-primary" }).onclick = () => this.submit();
+      }
+      submit() {
+        const name = this.nameInput.value.trim();
+        if (!name) {
+          new import_obsidian2.Notice("Please enter a key name");
+          return;
+        }
+        this.onSubmit(name);
+        this.close();
+      }
+      onClose() {
+        this.contentEl.empty();
+      }
+    };
+    KeyDisplayModal = class extends import_obsidian2.Modal {
+      constructor(app, key, name) {
+        super(app);
+        this.key = key;
+        this.name = name;
+      }
+      onOpen() {
+        const { contentEl } = this;
+        contentEl.empty();
+        contentEl.addClass("pii-modal");
+        contentEl.createEl("h3", { text: "API Key Generated" });
+        contentEl.createEl("p", {
+          text: `Your API key "${this.name}" has been generated. Copy it now - you won't be able to see it again!`,
+          cls: "pii-warning-text"
+        });
+        const keyContainer = contentEl.createDiv("pii-key-display");
+        const keyText = keyContainer.createEl("code", {
+          text: this.key,
+          cls: "pii-key-text"
+        });
+        const copyBtn = keyContainer.createEl("button", {
+          text: "Copy",
+          cls: "pii-btn-primary"
+        });
+        copyBtn.onclick = async () => {
+          await navigator.clipboard.writeText(this.key);
+          new import_obsidian2.Notice("API key copied to clipboard");
+          copyBtn.textContent = "Copied!";
+          setTimeout(() => {
+            copyBtn.textContent = "Copy";
+          }, 2e3);
+        };
+        const buttonContainer = contentEl.createDiv({ cls: "pii-modal-buttons" });
+        buttonContainer.createEl("button", { text: "Close", cls: "pii-btn-primary" }).onclick = () => this.close();
+      }
+      onClose() {
+        this.contentEl.empty();
+      }
+    };
+    ConfirmModal = class extends import_obsidian2.Modal {
+      constructor(app, message, onConfirm) {
+        super(app);
+        this.message = message;
+        this.onConfirm = onConfirm;
+      }
+      onOpen() {
+        const { contentEl } = this;
+        contentEl.empty();
+        contentEl.addClass("pii-modal");
+        contentEl.createEl("h3", { text: "Confirm Action" });
+        contentEl.createEl("p", { text: this.message });
+        const buttonContainer = contentEl.createDiv({ cls: "pii-modal-buttons" });
+        buttonContainer.createEl("button", { text: "Cancel", cls: "pii-btn-secondary" }).onclick = () => {
+          this.onConfirm(false);
+          this.close();
+        };
+        buttonContainer.createEl("button", { text: "Confirm", cls: "pii-btn-warning" }).onclick = () => {
+          this.onConfirm(true);
+          this.close();
+        };
+      }
+      onClose() {
+        this.contentEl.empty();
+      }
+    };
+  }
+});
+
+// src/api/types.ts
+var ApiError;
+var init_types = __esm({
+  "src/api/types.ts"() {
+    ApiError = class extends Error {
+      constructor(code, message, statusCode = 500) {
+        super(message);
+        this.code = code;
+        this.statusCode = statusCode;
+        this.name = "ApiError";
+      }
+    };
+  }
+});
+
+// src/api/routes/search.ts
+var search_exports = {};
+__export(search_exports, {
+  handleSearchRequest: () => handleSearchRequest
+});
+async function handleSearchRequest(app, body, type) {
+  if (!body.query || typeof body.query !== "string") {
+    throw new ApiError(
+      "INVALID_REQUEST" /* INVALID_REQUEST */,
+      "Query is required and must be a string",
+      400
+    );
+  }
+  const caseSensitive = body.caseSensitive ?? false;
+  const maxResults = body.maxResults ?? 1e3;
+  if (maxResults < 1 || maxResults > 1e4) {
+    throw new ApiError(
+      "INVALID_REQUEST" /* INVALID_REQUEST */,
+      "maxResults must be between 1 and 10000",
+      400
+    );
+  }
+  const results = [];
+  const files = app.vault.getMarkdownFiles();
+  if (type === "regex") {
+    let regex;
+    try {
+      const flags = caseSensitive ? "g" : "gi";
+      regex = new RegExp(body.query, flags);
+    } catch (error) {
+      throw new ApiError(
+        "INVALID_REGEX" /* INVALID_REGEX */,
+        `Invalid regular expression: ${error instanceof Error ? error.message : "Unknown error"}`,
+        400
+      );
+    }
+    for (const file of files) {
+      if (results.length >= maxResults)
+        break;
+      const content = await app.vault.cachedRead(file);
+      const lines = content.split("\n");
+      for (let lineNum = 0; lineNum < lines.length; lineNum++) {
+        if (results.length >= maxResults)
+          break;
+        const lineText = lines[lineNum];
+        regex.lastIndex = 0;
+        let match;
+        while ((match = regex.exec(lineText)) !== null) {
+          if (results.length >= maxResults)
+            break;
+          results.push({
+            file: file.path,
+            line: lineNum,
+            col: match.index,
+            text: match[0],
+            context: lineText.trim()
+          });
+          if (match.index === regex.lastIndex) {
+            regex.lastIndex++;
+          }
+        }
+      }
+    }
+  } else {
+    const query = caseSensitive ? body.query : body.query.toLowerCase();
+    for (const file of files) {
+      if (results.length >= maxResults)
+        break;
+      const content = await app.vault.cachedRead(file);
+      const lines = content.split("\n");
+      for (let lineNum = 0; lineNum < lines.length; lineNum++) {
+        if (results.length >= maxResults)
+          break;
+        const lineText = lines[lineNum];
+        const searchLine = caseSensitive ? lineText : lineText.toLowerCase();
+        let index = 0;
+        while ((index = searchLine.indexOf(query, index)) !== -1) {
+          if (results.length >= maxResults)
+            break;
+          results.push({
+            file: file.path,
+            line: lineNum,
+            col: index,
+            text: lineText.substring(index, index + body.query.length),
+            context: lineText.trim()
+          });
+          index += body.query.length;
+        }
+      }
+    }
+  }
+  return results;
+}
+var init_search = __esm({
+  "src/api/routes/search.ts"() {
+    init_types();
+  }
+});
+
+// src/api/routes/encrypt.ts
+var encrypt_exports = {};
+__export(encrypt_exports, {
+  handleEncryptRequest: () => handleEncryptRequest
+});
+async function handleEncryptRequest(body, operation) {
+  if (operation === "encrypt") {
+    return await handleEncrypt(body);
+  } else {
+    return await handleDecrypt(body);
+  }
+}
+async function handleEncrypt(body) {
+  if (!body.text || typeof body.text !== "string") {
+    throw new ApiError(
+      "INVALID_REQUEST" /* INVALID_REQUEST */,
+      "Text is required and must be a string",
+      400
+    );
+  }
+  if (body.text.length > 1e6) {
+    throw new ApiError(
+      "INVALID_REQUEST" /* INVALID_REQUEST */,
+      "Text too large (max 1MB)",
+      400
+    );
+  }
+  const password = body.password || "default-api-password";
+  if (!password || password.length < 8) {
+    throw new ApiError(
+      "INVALID_REQUEST" /* INVALID_REQUEST */,
+      "Password must be at least 8 characters",
+      400
+    );
+  }
+  try {
+    const ciphertext = await encrypt(body.text, password);
+    return {
+      ciphertext,
+      algorithm: "AES-GCM"
+    };
+  } catch (error) {
+    throw new ApiError(
+      "ENCRYPTION_FAILED" /* ENCRYPTION_FAILED */,
+      `Encryption failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      500
+    );
+  }
+}
+async function handleDecrypt(body) {
+  if (!body.ciphertext || typeof body.ciphertext !== "string") {
+    throw new ApiError(
+      "INVALID_REQUEST" /* INVALID_REQUEST */,
+      "Ciphertext is required and must be a string",
+      400
+    );
+  }
+  if (!body.password || typeof body.password !== "string") {
+    throw new ApiError(
+      "INVALID_REQUEST" /* INVALID_REQUEST */,
+      "Password is required",
+      400
+    );
+  }
+  if (body.password.length < 8) {
+    throw new ApiError(
+      "INVALID_REQUEST" /* INVALID_REQUEST */,
+      "Password must be at least 8 characters",
+      400
+    );
+  }
+  try {
+    const plaintext = await decrypt(body.ciphertext, body.password);
+    return {
+      plaintext
+    };
+  } catch (error) {
+    throw new ApiError(
+      "DECRYPTION_FAILED" /* DECRYPTION_FAILED */,
+      `Decryption failed: ${error instanceof Error ? error.message : "Invalid password or corrupted data"}`,
+      400
+    );
+  }
+}
+var init_encrypt = __esm({
+  "src/api/routes/encrypt.ts"() {
+    init_crypto();
+    init_types();
+  }
+});
+
 // main.ts
 var main_exports = {};
 __export(main_exports, {
   default: () => PiiLockPlugin
 });
 module.exports = __toCommonJS(main_exports);
-var import_obsidian4 = require("obsidian");
+var import_obsidian5 = require("obsidian");
 
 // src/settings.ts
-var import_obsidian2 = require("obsidian");
+var import_obsidian3 = require("obsidian");
 var DEFAULT_SETTINGS = {
   patterns: ["\\d{6}-\\d{7}", "\\d{3}-\\d{4}-\\d{4}"],
   // Social Security Number-Phone Number Example
@@ -911,7 +1409,7 @@ async function saveDefaultPatternsToFile(plugin, content) {
     await adapter.write(filePath, content);
   } catch (error) {
     console.error("Could not save default-patterns.ini:", error);
-    new import_obsidian2.Notice("Failed to save default patterns file");
+    new import_obsidian3.Notice("Failed to save default patterns file");
   }
 }
 async function updatePatternInINI(plugin, oldPattern, newPattern, source, defaultPatterns) {
@@ -953,7 +1451,7 @@ async function updatePatternInINI(plugin, oldPattern, newPattern, source, defaul
     }
   }
 }
-var PiiSettingTab = class extends import_obsidian2.PluginSettingTab {
+var PiiSettingTab = class extends import_obsidian3.PluginSettingTab {
   // Track the open state
   constructor(app, plugin) {
     super(app, plugin);
@@ -972,7 +1470,7 @@ var PiiSettingTab = class extends import_obsidian2.PluginSettingTab {
       const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
       this.plugin.settings.storedPassword = hashHex;
       await this.plugin.saveSettings();
-      new import_obsidian2.Notice("Password saved successfully");
+      new import_obsidian3.Notice("Password saved successfully");
     }
   }
   display() {
@@ -1006,7 +1504,7 @@ var PiiSettingTab = class extends import_obsidian2.PluginSettingTab {
       await this.plugin.saveSettings();
     }
     this.plugin.settings.patternMetadata.forEach((patternMeta, idx) => {
-      const s = new import_obsidian2.Setting(patternsContainer).setName(patternMeta.displayName).addText(
+      const s = new import_obsidian3.Setting(patternsContainer).setName(patternMeta.displayName).addText(
         (t) => t.setPlaceholder("\\d{6}-...").setValue(patternMeta.pattern).onChange(async (v) => {
           const oldPattern = patternMeta.pattern;
           this.plugin.settings.patterns[idx] = v;
@@ -1034,7 +1532,7 @@ var PiiSettingTab = class extends import_obsidian2.PluginSettingTab {
           button.disabled = true;
       }
     });
-    new import_obsidian2.Setting(patternsContainer).addButton(
+    new import_obsidian3.Setting(patternsContainer).addButton(
       (btn) => btn.setButtonText("+").setTooltip("Add pattern").setCta().onClick(async () => {
         const userPatternCount = this.plugin.settings.patternMetadata.filter((p) => p.source === "user").length + 1;
         this.plugin.settings.patterns.push("");
@@ -1052,14 +1550,14 @@ var PiiSettingTab = class extends import_obsidian2.PluginSettingTab {
     const selectedCountries = this.plugin.settings.selectedCountries;
     const selectedCountryNames = selectedCountries.map((c) => defaultPatterns[c]?.displayName || c).join(", ");
     containerEl.createEl("h3", { text: "Add Country Patterns" });
-    new import_obsidian2.Setting(containerEl).setName("Selected Countries").setDesc(selectedCountries.length > 0 ? selectedCountryNames : "No countries selected").addButton(
+    new import_obsidian3.Setting(containerEl).setName("Selected Countries").setDesc(selectedCountries.length > 0 ? selectedCountryNames : "No countries selected").addButton(
       (btn) => btn.setButtonText("Clear All").onClick(async () => {
         this.plugin.settings.selectedCountries = [];
         const userPatterns = this.plugin.settings.patternMetadata.filter((p) => p.source === "user");
         this.plugin.settings.patterns = userPatterns.map((p) => p.pattern);
         this.plugin.settings.patternMetadata = userPatterns;
         await this.plugin.saveSettings();
-        new import_obsidian2.Notice("Cleared all selected countries");
+        new import_obsidian3.Notice("Cleared all selected countries");
         this.display();
       })
     );
@@ -1067,7 +1565,7 @@ var PiiSettingTab = class extends import_obsidian2.PluginSettingTab {
     availableCountries.forEach((country) => {
       const pattern = defaultPatterns[country];
       const isSelected = this.plugin.settings.selectedCountries.includes(country);
-      new import_obsidian2.Setting(countryButtonsContainer).setName(pattern.displayName).setDesc(`Add patterns for ${pattern.displayName}`).addButton(
+      new import_obsidian3.Setting(countryButtonsContainer).setName(pattern.displayName).setDesc(`Add patterns for ${pattern.displayName}`).addButton(
         (btn) => btn.setButtonText(isSelected ? "Remove" : "Add").setClass(isSelected ? "mod-warning" : "mod-cta").onClick(async () => {
           const currentlySelected = this.plugin.settings.selectedCountries.includes(country);
           if (currentlySelected) {
@@ -1087,12 +1585,12 @@ var PiiSettingTab = class extends import_obsidian2.PluginSettingTab {
             }
             this.plugin.settings.patterns = this.plugin.settings.patterns.filter((p) => !allCountryPatterns.includes(p));
             this.plugin.settings.patternMetadata = this.plugin.settings.patternMetadata.filter((p) => p.source !== country);
-            new import_obsidian2.Notice(`Removed ${pattern.displayName} patterns`);
+            new import_obsidian3.Notice(`Removed ${pattern.displayName} patterns`);
           } else {
             if (!this.plugin.settings.selectedCountries.includes(country)) {
               this.plugin.settings.selectedCountries.push(country);
             } else {
-              new import_obsidian2.Notice(`${pattern.displayName} is already selected`);
+              new import_obsidian3.Notice(`${pattern.displayName} is already selected`);
               return;
             }
             if (pattern.name) {
@@ -1128,7 +1626,7 @@ var PiiSettingTab = class extends import_obsidian2.PluginSettingTab {
                 });
               });
             }
-            new import_obsidian2.Notice(`Added ${pattern.displayName} patterns`);
+            new import_obsidian3.Notice(`Added ${pattern.displayName} patterns`);
           }
           await this.plugin.saveSettings();
           this.display();
@@ -1137,7 +1635,7 @@ var PiiSettingTab = class extends import_obsidian2.PluginSettingTab {
     });
     containerEl.createEl("hr");
     containerEl.createEl("h3", { text: "Default Patterns" });
-    new import_obsidian2.Setting(containerEl).setName("Create Default Patterns File").setDesc("Create the default-patterns.ini file with standard country patterns").addButton(
+    new import_obsidian3.Setting(containerEl).setName("Create Default Patterns File").setDesc("Create the default-patterns.ini file with standard country patterns").addButton(
       (btn) => btn.setButtonText("Create File").setCta().onClick(async () => {
         const defaultContent = `[US]
 name=[A-Z][a-z]+\\s[A-Z][a-z]+|[A-Z][a-z]+\\s[A-Z]\\.\\s[A-Z][a-z]+
@@ -1171,11 +1669,11 @@ phone=
 `;
         try {
           await saveDefaultPatternsToFile(this.plugin, defaultContent);
-          new import_obsidian2.Notice("Default patterns file created successfully!");
+          new import_obsidian3.Notice("Default patterns file created successfully!");
           this.display();
         } catch (error) {
           console.error("Failed to create default patterns file:", error);
-          new import_obsidian2.Notice("Failed to create default patterns file");
+          new import_obsidian3.Notice("Failed to create default patterns file");
         }
       })
     );
@@ -1187,21 +1685,80 @@ phone=
       text: statusText,
       cls: hasStoredPassword ? "pii-password-status-active" : "pii-password-status-inactive"
     });
-    new import_obsidian2.Setting(containerEl).setName(hasStoredPassword ? "Change Password" : "Set Password").setDesc(hasStoredPassword ? "Update your encryption password" : "Set a password for encryption operations").addButton(
+    new import_obsidian3.Setting(containerEl).setName(hasStoredPassword ? "Change Password" : "Set Password").setDesc(hasStoredPassword ? "Update your encryption password" : "Set a password for encryption operations").addButton(
       (btn) => btn.setButtonText(hasStoredPassword ? "Change" : "Set").setCta().onClick(async () => {
         await this.handlePasswordChange();
         this.display();
       })
     );
     if (hasStoredPassword) {
-      new import_obsidian2.Setting(containerEl).setName("Clear Stored Password").setDesc("Remove the stored password. You will be prompted for password on each operation.").addButton(
+      new import_obsidian3.Setting(containerEl).setName("Clear Stored Password").setDesc("Remove the stored password. You will be prompted for password on each operation.").addButton(
         (btn) => btn.setButtonText("Clear").setWarning().onClick(async () => {
           this.plugin.settings.storedPassword = void 0;
           await this.plugin.saveSettings();
-          new import_obsidian2.Notice("Password cleared successfully");
+          new import_obsidian3.Notice("Password cleared successfully");
           this.display();
         })
       );
+    }
+    containerEl.createEl("hr");
+    containerEl.createEl("h2", { text: "API Settings" });
+    containerEl.createEl("p", {
+      text: "Enable external API access for programmatic search and encryption operations",
+      cls: "setting-item-description"
+    });
+    new import_obsidian3.Setting(containerEl).setName("Enable API Server").setDesc("Allow external applications to access Lock & Find via REST API").addToggle(
+      (toggle) => toggle.setValue(this.plugin.settings.api.enabled).onChange(async (value) => {
+        this.plugin.settings.api.enabled = value;
+        await this.plugin.saveSettings();
+        if (value) {
+          await this.plugin.startApiServer();
+          new import_obsidian3.Notice("API server started");
+        } else {
+          await this.plugin.stopApiServer();
+          new import_obsidian3.Notice("API server stopped");
+        }
+        this.display();
+      })
+    );
+    if (this.plugin.settings.api.enabled) {
+      new import_obsidian3.Setting(containerEl).setName("API Port").setDesc("Port number for the API server (requires restart)").addText(
+        (text) => text.setPlaceholder("27750").setValue(String(this.plugin.settings.api.port)).onChange(async (value) => {
+          const port = parseInt(value);
+          if (port > 0 && port < 65536) {
+            this.plugin.settings.api.port = port;
+            await this.plugin.saveSettings();
+          }
+        })
+      );
+      new import_obsidian3.Setting(containerEl).setName("Rate Limit").setDesc("Maximum requests per minute per API key").addText(
+        (text) => text.setPlaceholder("100").setValue(String(this.plugin.settings.api.rateLimit.maxRequests)).onChange(async (value) => {
+          const limit = parseInt(value);
+          if (limit > 0) {
+            this.plugin.settings.api.rateLimit.maxRequests = limit;
+            await this.plugin.saveSettings();
+          }
+        })
+      );
+      new import_obsidian3.Setting(containerEl).setName("Log API Requests").setDesc("Keep a log of all API requests for debugging").addToggle(
+        (toggle) => toggle.setValue(this.plugin.settings.api.logRequests).onChange(async (value) => {
+          this.plugin.settings.api.logRequests = value;
+          await this.plugin.saveSettings();
+        })
+      );
+      new import_obsidian3.Setting(containerEl).setName("API Keys").setDesc("Manage API keys for authentication").addButton(
+        (btn) => btn.setButtonText("Manage Keys").setCta().onClick(async () => {
+          const { ApiKeyModal: ApiKeyModal2 } = await Promise.resolve().then(() => (init_ApiKeyModal(), ApiKeyModal_exports));
+          new ApiKeyModal2(this.app, this.plugin).open();
+        })
+      );
+      const apiServer = this.plugin.getApiServer();
+      const isRunning = apiServer?.isServerRunning() || false;
+      const statusText2 = isRunning ? "\u2705 API Server Running" : "\u2B55 API Server Stopped";
+      containerEl.createEl("p", {
+        text: statusText2,
+        cls: isRunning ? "pii-status-active" : "pii-status-inactive"
+      });
     }
   }
 };
@@ -1210,8 +1767,8 @@ phone=
 init_scanner();
 
 // ui/ResultsModal.ts
-var import_obsidian3 = require("obsidian");
-var ResultsModal = class extends import_obsidian3.Modal {
+var import_obsidian4 = require("obsidian");
+var ResultsModal = class extends import_obsidian4.Modal {
   constructor(app, matches) {
     super(app);
     this.matches = matches;
@@ -1246,7 +1803,7 @@ var ResultsModal = class extends import_obsidian3.Modal {
   async openAtPosition(m) {
     const leaf = this.app.workspace.getLeaf(false);
     await leaf.openFile(m.file);
-    const view = this.app.workspace.getActiveViewOfType(import_obsidian3.MarkdownView);
+    const view = this.app.workspace.getActiveViewOfType(import_obsidian4.MarkdownView);
     if (view)
       view.editor.setCursor({ line: m.line, ch: m.col });
   }
@@ -1281,10 +1838,360 @@ function registerCommands(plugin) {
 
 // main.ts
 init_LnFSidebarView();
-var PiiLockPlugin = class extends import_obsidian4.Plugin {
+
+// src/api/keyManager.ts
+var ApiKeyManager = class {
+  constructor(saveCallback) {
+    this.saveCallback = saveCallback;
+    this.keys = /* @__PURE__ */ new Map();
+  }
+  /**
+   * Generate a cryptographically secure API key
+   * Format: lnf_<32 random hex chars>
+   */
+  async generateKey(name) {
+    const keyBytes = new Uint8Array(32);
+    crypto.getRandomValues(keyBytes);
+    const rawKey = `lnf_${Array.from(keyBytes).map((b) => b.toString(16).padStart(2, "0")).join("")}`;
+    const keyHash = await this.hashKey(rawKey);
+    const keyInfo = {
+      id: this.generateId(),
+      name,
+      keyHash,
+      createdAt: Date.now(),
+      usageCount: 0,
+      enabled: true
+    };
+    this.keys.set(keyInfo.id, keyInfo);
+    await this.saveCallback();
+    return rawKey;
+  }
+  /**
+   * Validate an API key using constant-time comparison
+   */
+  async validateKey(rawKey) {
+    if (!rawKey || !rawKey.startsWith("lnf_")) {
+      return null;
+    }
+    const targetHash = await this.hashKey(rawKey);
+    for (const keyInfo of this.keys.values()) {
+      if (!keyInfo.enabled)
+        continue;
+      if (await this.constantTimeCompare(targetHash, keyInfo.keyHash)) {
+        keyInfo.lastUsed = Date.now();
+        keyInfo.usageCount++;
+        await this.saveCallback();
+        return keyInfo;
+      }
+    }
+    return null;
+  }
+  /**
+   * Revoke an API key by ID
+   */
+  async revokeKey(keyId) {
+    const keyInfo = this.keys.get(keyId);
+    if (!keyInfo)
+      return false;
+    keyInfo.enabled = false;
+    await this.saveCallback();
+    return true;
+  }
+  /**
+   * Delete an API key permanently
+   */
+  async deleteKey(keyId) {
+    const deleted = this.keys.delete(keyId);
+    if (deleted) {
+      await this.saveCallback();
+    }
+    return deleted;
+  }
+  /**
+   * List all API keys (without sensitive data)
+   */
+  listKeys() {
+    return Array.from(this.keys.values()).map((key) => ({
+      ...key,
+      keyHash: "[REDACTED]"
+    }));
+  }
+  /**
+   * Get key by ID
+   */
+  getKey(keyId) {
+    return this.keys.get(keyId);
+  }
+  /**
+   * Load keys from serialized data
+   */
+  loadKeys(keysData) {
+    this.keys.clear();
+    keysData.forEach((key) => {
+      this.keys.set(key.id, key);
+    });
+  }
+  /**
+   * Serialize keys for storage
+   */
+  serializeKeys() {
+    return Array.from(this.keys.values());
+  }
+  /**
+   * Hash an API key using SHA-256 with multiple rounds
+   */
+  async hashKey(key) {
+    const encoder = new TextEncoder();
+    let hash = await crypto.subtle.digest("SHA-256", encoder.encode(key));
+    for (let i = 0; i < 1e4; i++) {
+      hash = await crypto.subtle.digest("SHA-256", hash);
+    }
+    return Array.from(new Uint8Array(hash)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  }
+  /**
+   * Constant-time string comparison to prevent timing attacks
+   */
+  async constantTimeCompare(a, b) {
+    if (a.length !== b.length) {
+      let result2 = 0;
+      for (let i = 0; i < a.length; i++) {
+        result2 |= a.charCodeAt(i) ^ b.charCodeAt(i % b.length);
+      }
+      return false;
+    }
+    let result = 0;
+    for (let i = 0; i < a.length; i++) {
+      result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+    }
+    return result === 0;
+  }
+  /**
+   * Generate a unique ID for a key
+   */
+  generateId() {
+    return `key_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+  }
+};
+
+// src/api/server.ts
+init_types();
+var LnFApiServer = class {
+  constructor(app, plugin) {
+    this.app = app;
+    this.plugin = plugin;
+    this.requestLogs = [];
+    this.rateLimitMap = /* @__PURE__ */ new Map();
+    this.server = null;
+    this.isRunning = false;
+    this.keyManager = new ApiKeyManager(async () => {
+      await this.plugin.saveSettings();
+    });
+  }
+  /**
+   * Start the API server
+   */
+  async start(settings) {
+    if (this.isRunning) {
+      console.warn("API server already running");
+      return;
+    }
+    if (this.plugin.settings.apiKeys) {
+      this.keyManager.loadKeys(this.plugin.settings.apiKeys);
+    }
+    console.log(`API server started on port ${settings.port}`);
+    console.log(`TLS enabled: ${!!settings.tlsCertPath}`);
+    console.log(`Rate limit: ${settings.rateLimit.maxRequests} requests per ${settings.rateLimit.windowMs}ms`);
+    this.isRunning = true;
+  }
+  /**
+   * Stop the API server
+   */
+  async stop() {
+    if (!this.isRunning) {
+      return;
+    }
+    if (this.server) {
+      this.server.close();
+      this.server = null;
+    }
+    this.isRunning = false;
+    console.log("API server stopped");
+  }
+  /**
+   * Handle incoming API request (called by Obsidian's request handler)
+   */
+  async handleRequest(method, path, headers, body) {
+    const startTime = Date.now();
+    let keyId = "unknown";
+    try {
+      const apiKey = headers["x-api-key"] || headers["X-API-Key"];
+      if (!apiKey) {
+        throw new ApiError(
+          "UNAUTHORIZED" /* UNAUTHORIZED */,
+          "Missing API key",
+          401
+        );
+      }
+      const keyInfo = await this.keyManager.validateKey(apiKey);
+      if (!keyInfo) {
+        throw new ApiError(
+          "UNAUTHORIZED" /* UNAUTHORIZED */,
+          "Invalid API key",
+          401
+        );
+      }
+      keyId = keyInfo.id;
+      if (!this.checkRateLimit(keyId)) {
+        throw new ApiError(
+          "RATE_LIMIT_EXCEEDED" /* RATE_LIMIT_EXCEEDED */,
+          "Rate limit exceeded",
+          429
+        );
+      }
+      const result = await this.routeRequest(method, path, body);
+      this.logRequest({
+        id: this.generateLogId(),
+        timestamp: Date.now(),
+        method,
+        path,
+        keyId,
+        statusCode: 200,
+        duration: Date.now() - startTime
+      });
+      return {
+        success: true,
+        data: result,
+        timestamp: Date.now()
+      };
+    } catch (error) {
+      const statusCode = error instanceof ApiError ? error.statusCode : 500;
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      const errorCode = error instanceof ApiError ? error.code : "SERVER_ERROR" /* SERVER_ERROR */;
+      this.logRequest({
+        id: this.generateLogId(),
+        timestamp: Date.now(),
+        method,
+        path,
+        keyId,
+        statusCode,
+        duration: Date.now() - startTime,
+        error: errorMessage
+      });
+      return {
+        success: false,
+        error: errorMessage,
+        timestamp: Date.now()
+      };
+    }
+  }
+  /**
+   * Route request to appropriate handler
+   */
+  async routeRequest(method, path, body) {
+    const { handleSearchRequest: handleSearchRequest2 } = await Promise.resolve().then(() => (init_search(), search_exports));
+    const { handleEncryptRequest: handleEncryptRequest2 } = await Promise.resolve().then(() => (init_encrypt(), encrypt_exports));
+    if (method === "POST" && path === "/api/search/regex") {
+      return await handleSearchRequest2(this.app, body, "regex");
+    }
+    if (method === "POST" && path === "/api/search/direct") {
+      return await handleSearchRequest2(this.app, body, "direct");
+    }
+    if (method === "POST" && path === "/api/encrypt") {
+      return await handleEncryptRequest2(body, "encrypt");
+    }
+    if (method === "POST" && path === "/api/decrypt") {
+      return await handleEncryptRequest2(body, "decrypt");
+    }
+    if (method === "GET" && path === "/api/health") {
+      return {
+        status: "ok",
+        version: this.plugin.manifest.version,
+        uptime: Date.now()
+      };
+    }
+    throw new ApiError(
+      "NOT_FOUND" /* NOT_FOUND */,
+      `Route not found: ${method} ${path}`,
+      404
+    );
+  }
+  /**
+   * Check rate limit for a key
+   */
+  checkRateLimit(keyId) {
+    const settings = this.plugin.settings.api;
+    const now = Date.now();
+    const windowMs = settings.rateLimit.windowMs;
+    const maxRequests = settings.rateLimit.maxRequests;
+    let requests = this.rateLimitMap.get(keyId) || [];
+    requests = requests.filter((timestamp) => now - timestamp < windowMs);
+    if (requests.length >= maxRequests) {
+      return false;
+    }
+    requests.push(now);
+    this.rateLimitMap.set(keyId, requests);
+    return true;
+  }
+  /**
+   * Log API request
+   */
+  logRequest(log) {
+    if (!this.plugin.settings.api.logRequests) {
+      return;
+    }
+    this.requestLogs.push(log);
+    if (this.requestLogs.length > 1e3) {
+      this.requestLogs = this.requestLogs.slice(-1e3);
+    }
+    console.log(
+      `[API] ${log.method} ${log.path} - ${log.statusCode} (${log.duration}ms)${log.error ? ` - ${log.error}` : ""}`
+    );
+  }
+  /**
+   * Get request logs
+   */
+  getRequestLogs(limit = 100) {
+    return this.requestLogs.slice(-limit);
+  }
+  /**
+   * Clear request logs
+   */
+  clearRequestLogs() {
+    this.requestLogs = [];
+  }
+  /**
+   * Get key manager for external access
+   */
+  getKeyManager() {
+    return this.keyManager;
+  }
+  /**
+   * Generate unique log ID
+   */
+  generateLogId() {
+    return `log_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+  }
+  /**
+   * Check if server is running
+   */
+  isServerRunning() {
+    return this.isRunning;
+  }
+};
+
+// main.ts
+var PiiLockPlugin = class extends import_obsidian5.Plugin {
+  constructor() {
+    super(...arguments);
+    this.apiServer = null;
+  }
   /* ──────────── Lifecycle ──────────── */
   async onload() {
     await this.loadSettings();
+    this.apiServer = new LnFApiServer(this.app, this);
+    if (this.settings.api.enabled) {
+      await this.startApiServer();
+    }
     this.registerView(
       VIEW_TYPE_PII,
       (leaf) => new LnFSidebarView(leaf, this)
@@ -1293,7 +2200,10 @@ var PiiLockPlugin = class extends import_obsidian4.Plugin {
     this.addSettingTab(new PiiSettingTab(this.app, this));
     registerCommands(this);
   }
-  onunload() {
+  async onunload() {
+    if (this.apiServer) {
+      await this.stopApiServer();
+    }
   }
   /* ──────────── Helpers ──────────── */
   async activateSidebar() {
@@ -1315,5 +2225,22 @@ var PiiLockPlugin = class extends import_obsidian4.Plugin {
   }
   async saveSettings() {
     await this.saveData(this.settings);
+  }
+  /* ──────────── API Server Methods ──────────── */
+  async startApiServer() {
+    if (!this.apiServer) {
+      console.error("API server not initialized");
+      return;
+    }
+    await this.apiServer.start(this.settings.api);
+  }
+  async stopApiServer() {
+    if (!this.apiServer) {
+      return;
+    }
+    await this.apiServer.stop();
+  }
+  getApiServer() {
+    return this.apiServer;
   }
 };
