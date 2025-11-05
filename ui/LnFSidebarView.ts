@@ -1,6 +1,6 @@
 import {
   ItemView, WorkspaceLeaf, MarkdownView,
-  Modal, Setting, Notice, App
+  Modal, Notice, App
 } from "obsidian";
 import type PiiLockPlugin from "../main";
 import { scanVault, MatchInfo } from "../src/scanner";
@@ -211,7 +211,7 @@ export class PwModal extends Modal {
         cls: "pii-password-container"
       });
       confirmContainer.createEl("label", {
-        text: "Confirm Password",
+        text: "Confirm password",
         cls: "pii-input-label"
       });
       const confirmInputWrapper = confirmContainer.createDiv({
@@ -322,7 +322,7 @@ export class LnFSidebarView extends ItemView {
   private boundHandleDragStart = this.handleDragStart.bind(this);
   constructor(leaf: WorkspaceLeaf, private plugin:PiiLockPlugin){super(leaf);}
   getViewType(){return VIEW_TYPE_PII;}
-  getDisplayText(){return "Lock and Find";}
+  getDisplayText(){return "Lock and find";}
   getIcon(){return "shield";}
 
   async onOpen(){
@@ -334,25 +334,25 @@ export class LnFSidebarView extends ItemView {
     // Mode toggle buttons
     const modeContainer = e.createEl("div", {cls: "pii-mode-toggle"});
     const scanModeBtn = modeContainer.createEl("button", {
-      cls: this.currentMode === 'scan' ? "pii-btn-primary" : "pii-btn-secondary",
-      text: "Scan Mode"
+      cls: this.currentMode === 'scan' ? "pii-btn-primary pii-btn-half" : "pii-btn-secondary pii-btn-half",
+      text: "Scan mode"
     });
     const searchModeBtn = modeContainer.createEl("button", {
-      cls: this.currentMode === 'search' ? "pii-btn-primary" : "pii-btn-secondary", 
-      text: "Search Mode"
+      cls: this.currentMode === 'search' ? "pii-btn-primary pii-btn-half" : "pii-btn-secondary pii-btn-half",
+      text: "Search mode"
     });
 
     scanModeBtn.onclick = () => {
       this.currentMode = 'scan';
-      scanModeBtn.className = "pii-btn-primary";
-      searchModeBtn.className = "pii-btn-secondary";
+      scanModeBtn.className = "pii-btn-primary pii-btn-half";
+      searchModeBtn.className = "pii-btn-secondary pii-btn-half";
       this.render();
     };
 
     searchModeBtn.onclick = () => {
       this.currentMode = 'search';
-      scanModeBtn.className = "pii-btn-secondary";
-      searchModeBtn.className = "pii-btn-primary";
+      scanModeBtn.className = "pii-btn-secondary pii-btn-half";
+      searchModeBtn.className = "pii-btn-primary pii-btn-half";
       this.render();
     };
 
@@ -426,9 +426,9 @@ export class LnFSidebarView extends ItemView {
     });
 
     e.createEl("hr");
-    
+
     // Results list with better styling
-    const listContainer = e.createEl("div",{cls:"pii-list"});
+    e.createEl("div",{cls:"pii-list"});
     
     // Drop area with icon and better instructions
     const dropArea = e.createEl("div",{cls:"pii-drop"});
@@ -556,7 +556,6 @@ export class LnFSidebarView extends ItemView {
     const drop = this.containerEl.querySelector(".pii-drop") as HTMLElement;
     const searchContainer = this.containerEl.querySelector(".pii-search-container") as HTMLElement;
     const scanControls = this.containerEl.querySelector(".pii-scan-controls") as HTMLElement;
-    const modeContainer = this.containerEl.querySelector(".pii-mode-toggle") as HTMLElement;
     
     // Show/hide controls based on mode
     if (searchContainer) {
@@ -589,9 +588,9 @@ export class LnFSidebarView extends ItemView {
     // Create rows for each result
     currentResults.forEach((m,i)=>{
       const row = list.createEl("div", {cls: "pii-row"});
-      
+
       // Add text content with ellipsis for long text
-      const textEl = row.createEl("div", {cls: "pii-row-text", text: m.text});
+      row.createEl("div", {cls: "pii-row-text", text: m.text});
       
       // Add file location info
       row.createEl("div", {cls: "pii-row-location", text: `${m.file.basename}:${m.line+1}`});

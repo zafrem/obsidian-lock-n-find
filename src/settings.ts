@@ -5,6 +5,8 @@ import {
     Notice,
   } from "obsidian";
   import type PiiLockPlugin from "../main";
+  import type { ApiSettings } from "./api/types";
+  import { DEFAULT_API_SETTINGS } from "./api/types";
   
   /* ──────────────── Type and Default Value ──────────────── */
   export interface PatternWithMetadata {
@@ -20,6 +22,8 @@ import {
     storedPassword?: string;     // Temporarily stored password (hashed)
     defaultPatterns: string;     // INI format string with country-specific patterns
     selectedCountries: string[]; // List of selected countries
+    api: ApiSettings;            // API server configuration
+    apiKeys: string;             // Serialized API keys
   }
   
   export const DEFAULT_SETTINGS: PiiSettings = {
@@ -32,6 +36,8 @@ import {
     storedPassword: undefined,
     defaultPatterns: "", // Will be loaded from external file
     selectedCountries: [], // No countries selected by default
+    api: DEFAULT_API_SETTINGS,
+    apiKeys: ""
   };
 
   /* ──────────────── Default Patterns Utilities ──────────────── */
@@ -310,8 +316,8 @@ import {
   display(): void {
       const { containerEl } = this;
       containerEl.empty();
-      
-      this.renderContent();
+
+      void this.renderContent();
   }
 
   private async renderContent(): Promise<void> {
@@ -321,7 +327,7 @@ import {
       // Create collapsible Manage Patterns section
       const patternsHeader = containerEl.createEl("details");
       patternsHeader.open = this.managePatternsSectionOpen; // Restore the open state
-      patternsHeader.createEl("summary", { text: "Manage Patterns", cls: "pii-collapsible-header" });
+      patternsHeader.createEl("summary", { text: "Manage patterns", cls: "pii-collapsible-header" });
       const patternsContainer = patternsHeader.createDiv("pii-patterns-container");
 
       // Save the open state when toggled
@@ -373,7 +379,7 @@ import {
           .addExtraButton((btn) =>
             btn
               .setIcon("trash")
-              .setTooltip("remove")
+              .setTooltip("Remove")
               .onClick(async () => {
                 this.plugin.settings.patterns.splice(idx, 1);
                 this.plugin.settings.patternMetadata.splice(idx, 1);
@@ -426,15 +432,17 @@ import {
       // Show currently selected countries
       const selectedCountries = this.plugin.settings.selectedCountries;
       const selectedCountryNames = selectedCountries.map(c => defaultPatterns[c]?.displayName || c).join(', ');
-      
-      containerEl.createEl("h3", { text: "Add Country Patterns" });
-      
+
       new Setting(containerEl)
-        .setName("Selected Countries")
+        .setName("Add country patterns")
+        .setHeading();
+
+      new Setting(containerEl)
+        .setName("Selected countries")
         .setDesc(selectedCountries.length > 0 ? selectedCountryNames : "No countries selected")
         .addButton((btn) =>
           btn
-            .setButtonText("Clear All")
+            .setButtonText("Clear all")
             .onClick(async () => {
               this.plugin.settings.selectedCountries = [];
               // Keep only user patterns
@@ -541,15 +549,18 @@ import {
       });
 
       containerEl.createEl("hr");
-      containerEl.createEl("h3", { text: "Default Patterns" });
+
+      new Setting(containerEl)
+        .setName("Default patterns")
+        .setHeading();
 
       // Create Default Patterns File button
       new Setting(containerEl)
-        .setName("Create Default Patterns File")
+        .setName("Create default patterns file")
         .setDesc("Create the default-patterns.ini file with standard country patterns")
         .addButton((btn) =>
           btn
-            .setButtonText("Create File")
+            .setButtonText("Create file")
             .setCta()
             .onClick(async () => {
               const defaultContent = `[US]
@@ -595,12 +606,15 @@ phone=
         );
 
       containerEl.createEl("hr");
-      containerEl.createEl("h3", { text: "Password Management" });
+
+      new Setting(containerEl)
+        .setName("Password management")
+        .setHeading();
 
       // Password status
       const hasStoredPassword = !!this.plugin.settings.storedPassword;
       const statusText = hasStoredPassword ? "Password is currently stored" : "No password stored";
-      const statusEl = containerEl.createEl("p", { 
+      containerEl.createEl("p", {
         text: statusText,
         cls: hasStoredPassword ? "pii-password-status-active" : "pii-password-status-inactive"
       });
@@ -622,7 +636,7 @@ phone=
       // Clear password button (only show if password is stored)
       if (hasStoredPassword) {
         new Setting(containerEl)
-          .setName("Clear Stored Password")
+          .setName("Clear stored password")
           .setDesc("Remove the stored password. You will be prompted for password on each operation.")
           .addButton((btn) =>
             btn
@@ -639,15 +653,15 @@ phone=
 
       // API Settings Section
       containerEl.createEl("hr");
-      containerEl.createEl("h2", { text: "API Settings" });
-      containerEl.createEl("p", {
-        text: "Enable external API access for programmatic search and encryption operations",
-        cls: "setting-item-description"
-      });
+
+      new Setting(containerEl)
+        .setName("API settings")
+        .setDesc("Enable external API access for programmatic search and encryption operations")
+        .setHeading();
 
       // API Enable/Disable
       new Setting(containerEl)
-        .setName("Enable API Server")
+        .setName("Enable API server")
         .setDesc("Allow external applications to access Lock & Find via REST API")
         .addToggle((toggle) =>
           toggle
@@ -657,10 +671,10 @@ phone=
               await this.plugin.saveSettings();
 
               if (value) {
-                await this.plugin.startApiServer();
+                this.plugin.startApiServer();
                 new Notice("API server started");
               } else {
-                await this.plugin.stopApiServer();
+                this.plugin.stopApiServer();
                 new Notice("API server stopped");
               }
 
@@ -672,7 +686,7 @@ phone=
       if (this.plugin.settings.api.enabled) {
         // API Port
         new Setting(containerEl)
-          .setName("API Port")
+          .setName("API port")
           .setDesc("Port number for the API server (requires restart)")
           .addText((text) =>
             text
@@ -689,7 +703,7 @@ phone=
 
         // Rate Limiting
         new Setting(containerEl)
-          .setName("Rate Limit")
+          .setName("Rate limit")
           .setDesc("Maximum requests per minute per API key")
           .addText((text) =>
             text
@@ -706,7 +720,7 @@ phone=
 
         // Request Logging
         new Setting(containerEl)
-          .setName("Log API Requests")
+          .setName("Log API requests")
           .setDesc("Keep a log of all API requests for debugging")
           .addToggle((toggle) =>
             toggle
@@ -719,11 +733,11 @@ phone=
 
         // API Key Management
         new Setting(containerEl)
-          .setName("API Keys")
+          .setName("API keys")
           .setDesc("Manage API keys for authentication")
           .addButton((btn) =>
             btn
-              .setButtonText("Manage Keys")
+              .setButtonText("Manage keys")
               .setCta()
               .onClick(async () => {
                 const { ApiKeyModal } = await import("./ui/ApiKeyModal");

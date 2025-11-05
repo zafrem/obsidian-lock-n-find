@@ -19,6 +19,35 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
+// src/api/types.ts
+var DEFAULT_API_SETTINGS, ApiError;
+var init_types = __esm({
+  "src/api/types.ts"() {
+    DEFAULT_API_SETTINGS = {
+      enabled: false,
+      port: 27750,
+      apiKey: "",
+      tlsCertPath: "",
+      tlsKeyPath: "",
+      allowedOrigins: ["https://localhost"],
+      rateLimit: {
+        windowMs: 6e4,
+        // 1 minute
+        maxRequests: 100
+      },
+      logRequests: true
+    };
+    ApiError = class extends Error {
+      constructor(code, message, statusCode = 500) {
+        super(message);
+        this.code = code;
+        this.statusCode = statusCode;
+        this.name = "ApiError";
+      }
+    };
+  }
+});
+
 // src/scanner.ts
 async function scanVault(plugin) {
   const vault = plugin.app.vault;
@@ -268,7 +297,7 @@ var init_LnFSidebarView = __esm({
             cls: "pii-password-container"
           });
           confirmContainer.createEl("label", {
-            text: "Confirm Password",
+            text: "Confirm password",
             cls: "pii-input-label"
           });
           const confirmInputWrapper = confirmContainer.createDiv({
@@ -365,7 +394,7 @@ var init_LnFSidebarView = __esm({
         return VIEW_TYPE_PII;
       }
       getDisplayText() {
-        return "Lock and Find";
+        return "Lock and find";
       }
       getIcon() {
         return "shield";
@@ -376,23 +405,23 @@ var init_LnFSidebarView = __esm({
         this.setupTextSelectionDragDrop();
         const modeContainer = e.createEl("div", { cls: "pii-mode-toggle" });
         const scanModeBtn = modeContainer.createEl("button", {
-          cls: this.currentMode === "scan" ? "pii-btn-primary" : "pii-btn-secondary",
-          text: "Scan Mode"
+          cls: this.currentMode === "scan" ? "pii-btn-primary pii-btn-half" : "pii-btn-secondary pii-btn-half",
+          text: "Scan mode"
         });
         const searchModeBtn = modeContainer.createEl("button", {
-          cls: this.currentMode === "search" ? "pii-btn-primary" : "pii-btn-secondary",
-          text: "Search Mode"
+          cls: this.currentMode === "search" ? "pii-btn-primary pii-btn-half" : "pii-btn-secondary pii-btn-half",
+          text: "Search mode"
         });
         scanModeBtn.onclick = () => {
           this.currentMode = "scan";
-          scanModeBtn.className = "pii-btn-primary";
-          searchModeBtn.className = "pii-btn-secondary";
+          scanModeBtn.className = "pii-btn-primary pii-btn-half";
+          searchModeBtn.className = "pii-btn-secondary pii-btn-half";
           this.render();
         };
         searchModeBtn.onclick = () => {
           this.currentMode = "search";
-          scanModeBtn.className = "pii-btn-secondary";
-          searchModeBtn.className = "pii-btn-primary";
+          scanModeBtn.className = "pii-btn-secondary pii-btn-half";
+          searchModeBtn.className = "pii-btn-primary pii-btn-half";
           this.render();
         };
         const scanControls = e.createEl("div", { cls: "pii-scan-controls" });
@@ -448,7 +477,7 @@ var init_LnFSidebarView = __esm({
           }
         });
         e.createEl("hr");
-        const listContainer = e.createEl("div", { cls: "pii-list" });
+        e.createEl("div", { cls: "pii-list" });
         const dropArea = e.createEl("div", { cls: "pii-drop" });
         dropArea.createEl("div", { cls: "pii-drop-icon", text: "" });
         dropArea.createEl("div", { text: "Drag items here to encrypt" });
@@ -546,7 +575,6 @@ var init_LnFSidebarView = __esm({
         const drop = this.containerEl.querySelector(".pii-drop");
         const searchContainer = this.containerEl.querySelector(".pii-search-container");
         const scanControls = this.containerEl.querySelector(".pii-scan-controls");
-        const modeContainer = this.containerEl.querySelector(".pii-mode-toggle");
         if (searchContainer) {
           searchContainer.toggleClass("pii-hidden", this.currentMode !== "search");
         }
@@ -567,7 +595,7 @@ var init_LnFSidebarView = __esm({
         }
         currentResults.forEach((m, i) => {
           const row = list.createEl("div", { cls: "pii-row" });
-          const textEl = row.createEl("div", { cls: "pii-row-text", text: m.text });
+          row.createEl("div", { cls: "pii-row-text", text: m.text });
           row.createEl("div", { cls: "pii-row-location", text: `${m.file.basename}:${m.line + 1}` });
           row.setAttr("draggable", "true");
           row.ondragstart = (e) => e.dataTransfer?.setData("text/plain", String(i));
@@ -830,18 +858,18 @@ var init_ApiKeyModal = __esm({
         const { contentEl } = this;
         contentEl.empty();
         contentEl.addClass("pii-modal");
-        contentEl.createEl("h2", { text: "API Key Management" });
+        contentEl.createEl("h2", { text: "API key management" });
         contentEl.createEl("p", {
-          text: "Generate and manage API keys for external access to Lock & Find.",
+          text: "Generate and manage API keys for external access to Lock & Find",
           cls: "pii-modal-description"
         });
-        new import_obsidian2.Setting(contentEl).setName("Generate New API Key").setDesc("Create a new API key for authentication").addButton(
-          (btn) => btn.setButtonText("Generate Key").setCta().onClick(async () => {
+        new import_obsidian2.Setting(contentEl).setName("Generate new API key").setDesc("Create a new API key for authentication").addButton(
+          (btn) => btn.setButtonText("Generate key").setCta().onClick(async () => {
             await this.generateNewKey();
           })
         );
         contentEl.createEl("hr");
-        contentEl.createEl("h3", { text: "Existing API Keys" });
+        contentEl.createEl("h3", { text: "Existing API keys" });
         this.keysList = contentEl.createDiv("pii-keys-list");
         this.renderKeys();
         const buttonContainer = contentEl.createDiv({ cls: "pii-modal-buttons" });
@@ -883,7 +911,7 @@ var init_ApiKeyModal = __esm({
             text: `Usage count: ${key.usageCount}`,
             cls: "pii-text-small"
           });
-          const status = keyItem.createEl("span", {
+          keyItem.createEl("span", {
             cls: key.enabled ? "pii-status-active" : "pii-status-inactive",
             text: key.enabled ? "Active" : "Revoked"
           });
@@ -999,7 +1027,7 @@ var init_ApiKeyModal = __esm({
         const { contentEl } = this;
         contentEl.empty();
         contentEl.addClass("pii-modal");
-        contentEl.createEl("h3", { text: "Enter Key Name" });
+        contentEl.createEl("h3", { text: "Enter key name" });
         contentEl.createEl("p", {
           text: "Give this API key a descriptive name",
           cls: "pii-modal-description"
@@ -1047,13 +1075,13 @@ var init_ApiKeyModal = __esm({
         const { contentEl } = this;
         contentEl.empty();
         contentEl.addClass("pii-modal");
-        contentEl.createEl("h3", { text: "API Key Generated" });
+        contentEl.createEl("h3", { text: "API key generated" });
         contentEl.createEl("p", {
           text: `Your API key "${this.name}" has been generated. Copy it now - you won't be able to see it again!`,
           cls: "pii-warning-text"
         });
         const keyContainer = contentEl.createDiv("pii-key-display");
-        const keyText = keyContainer.createEl("code", {
+        keyContainer.createEl("code", {
           text: this.key,
           cls: "pii-key-text"
         });
@@ -1086,7 +1114,7 @@ var init_ApiKeyModal = __esm({
         const { contentEl } = this;
         contentEl.empty();
         contentEl.addClass("pii-modal");
-        contentEl.createEl("h3", { text: "Confirm Action" });
+        contentEl.createEl("h3", { text: "Confirm action" });
         contentEl.createEl("p", { text: this.message });
         const buttonContainer = contentEl.createDiv({ cls: "pii-modal-buttons" });
         buttonContainer.createEl("button", { text: "Cancel", cls: "pii-btn-secondary" }).onclick = () => {
@@ -1100,21 +1128,6 @@ var init_ApiKeyModal = __esm({
       }
       onClose() {
         this.contentEl.empty();
-      }
-    };
-  }
-});
-
-// src/api/types.ts
-var ApiError;
-var init_types = __esm({
-  "src/api/types.ts"() {
-    ApiError = class extends Error {
-      constructor(code, message, statusCode = 500) {
-        super(message);
-        this.code = code;
-        this.statusCode = statusCode;
-        this.name = "ApiError";
       }
     };
   }
@@ -1320,6 +1333,7 @@ var import_obsidian5 = require("obsidian");
 
 // src/settings.ts
 var import_obsidian3 = require("obsidian");
+init_types();
 var DEFAULT_SETTINGS = {
   patterns: ["\\d{6}-\\d{7}", "\\d{3}-\\d{4}-\\d{4}"],
   // Social Security Number-Phone Number Example
@@ -1331,8 +1345,10 @@ var DEFAULT_SETTINGS = {
   storedPassword: void 0,
   defaultPatterns: "",
   // Will be loaded from external file
-  selectedCountries: []
+  selectedCountries: [],
   // No countries selected by default
+  api: DEFAULT_API_SETTINGS,
+  apiKeys: ""
 };
 async function loadDefaultPatternsFromFile(plugin) {
   try {
@@ -1476,14 +1492,14 @@ var PiiSettingTab = class extends import_obsidian3.PluginSettingTab {
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    this.renderContent();
+    void this.renderContent();
   }
   async renderContent() {
     const { containerEl } = this;
     containerEl.addClass("pii-settings-container");
     const patternsHeader = containerEl.createEl("details");
     patternsHeader.open = this.managePatternsSectionOpen;
-    patternsHeader.createEl("summary", { text: "Manage Patterns", cls: "pii-collapsible-header" });
+    patternsHeader.createEl("summary", { text: "Manage patterns", cls: "pii-collapsible-header" });
     const patternsContainer = patternsHeader.createDiv("pii-patterns-container");
     patternsHeader.addEventListener("toggle", () => {
       this.managePatternsSectionOpen = patternsHeader.open;
@@ -1513,7 +1529,7 @@ var PiiSettingTab = class extends import_obsidian3.PluginSettingTab {
           await this.plugin.saveSettings();
         })
       ).addExtraButton(
-        (btn) => btn.setIcon("trash").setTooltip("remove").onClick(async () => {
+        (btn) => btn.setIcon("trash").setTooltip("Remove").onClick(async () => {
           this.plugin.settings.patterns.splice(idx, 1);
           this.plugin.settings.patternMetadata.splice(idx, 1);
           if (patternMeta.source !== "user") {
@@ -1549,9 +1565,9 @@ var PiiSettingTab = class extends import_obsidian3.PluginSettingTab {
     const availableCountries = Object.keys(defaultPatterns).filter((c) => c !== "None");
     const selectedCountries = this.plugin.settings.selectedCountries;
     const selectedCountryNames = selectedCountries.map((c) => defaultPatterns[c]?.displayName || c).join(", ");
-    containerEl.createEl("h3", { text: "Add Country Patterns" });
-    new import_obsidian3.Setting(containerEl).setName("Selected Countries").setDesc(selectedCountries.length > 0 ? selectedCountryNames : "No countries selected").addButton(
-      (btn) => btn.setButtonText("Clear All").onClick(async () => {
+    new import_obsidian3.Setting(containerEl).setName("Add country patterns").setHeading();
+    new import_obsidian3.Setting(containerEl).setName("Selected countries").setDesc(selectedCountries.length > 0 ? selectedCountryNames : "No countries selected").addButton(
+      (btn) => btn.setButtonText("Clear all").onClick(async () => {
         this.plugin.settings.selectedCountries = [];
         const userPatterns = this.plugin.settings.patternMetadata.filter((p) => p.source === "user");
         this.plugin.settings.patterns = userPatterns.map((p) => p.pattern);
@@ -1634,9 +1650,9 @@ var PiiSettingTab = class extends import_obsidian3.PluginSettingTab {
       );
     });
     containerEl.createEl("hr");
-    containerEl.createEl("h3", { text: "Default Patterns" });
-    new import_obsidian3.Setting(containerEl).setName("Create Default Patterns File").setDesc("Create the default-patterns.ini file with standard country patterns").addButton(
-      (btn) => btn.setButtonText("Create File").setCta().onClick(async () => {
+    new import_obsidian3.Setting(containerEl).setName("Default patterns").setHeading();
+    new import_obsidian3.Setting(containerEl).setName("Create default patterns file").setDesc("Create the default-patterns.ini file with standard country patterns").addButton(
+      (btn) => btn.setButtonText("Create file").setCta().onClick(async () => {
         const defaultContent = `[US]
 name=[A-Z][a-z]+\\s[A-Z][a-z]+|[A-Z][a-z]+\\s[A-Z]\\.\\s[A-Z][a-z]+
 address=\\d{3}-\\d{2}-\\d{4}
@@ -1678,10 +1694,10 @@ phone=
       })
     );
     containerEl.createEl("hr");
-    containerEl.createEl("h3", { text: "Password Management" });
+    new import_obsidian3.Setting(containerEl).setName("Password management").setHeading();
     const hasStoredPassword = !!this.plugin.settings.storedPassword;
     const statusText = hasStoredPassword ? "Password is currently stored" : "No password stored";
-    const statusEl = containerEl.createEl("p", {
+    containerEl.createEl("p", {
       text: statusText,
       cls: hasStoredPassword ? "pii-password-status-active" : "pii-password-status-inactive"
     });
@@ -1692,7 +1708,7 @@ phone=
       })
     );
     if (hasStoredPassword) {
-      new import_obsidian3.Setting(containerEl).setName("Clear Stored Password").setDesc("Remove the stored password. You will be prompted for password on each operation.").addButton(
+      new import_obsidian3.Setting(containerEl).setName("Clear stored password").setDesc("Remove the stored password. You will be prompted for password on each operation.").addButton(
         (btn) => btn.setButtonText("Clear").setWarning().onClick(async () => {
           this.plugin.settings.storedPassword = void 0;
           await this.plugin.saveSettings();
@@ -1702,27 +1718,23 @@ phone=
       );
     }
     containerEl.createEl("hr");
-    containerEl.createEl("h2", { text: "API Settings" });
-    containerEl.createEl("p", {
-      text: "Enable external API access for programmatic search and encryption operations",
-      cls: "setting-item-description"
-    });
-    new import_obsidian3.Setting(containerEl).setName("Enable API Server").setDesc("Allow external applications to access Lock & Find via REST API").addToggle(
+    new import_obsidian3.Setting(containerEl).setName("API settings").setDesc("Enable external API access for programmatic search and encryption operations").setHeading();
+    new import_obsidian3.Setting(containerEl).setName("Enable API server").setDesc("Allow external applications to access Lock & Find via REST API").addToggle(
       (toggle) => toggle.setValue(this.plugin.settings.api.enabled).onChange(async (value) => {
         this.plugin.settings.api.enabled = value;
         await this.plugin.saveSettings();
         if (value) {
-          await this.plugin.startApiServer();
+          this.plugin.startApiServer();
           new import_obsidian3.Notice("API server started");
         } else {
-          await this.plugin.stopApiServer();
+          this.plugin.stopApiServer();
           new import_obsidian3.Notice("API server stopped");
         }
         this.display();
       })
     );
     if (this.plugin.settings.api.enabled) {
-      new import_obsidian3.Setting(containerEl).setName("API Port").setDesc("Port number for the API server (requires restart)").addText(
+      new import_obsidian3.Setting(containerEl).setName("API port").setDesc("Port number for the API server (requires restart)").addText(
         (text) => text.setPlaceholder("27750").setValue(String(this.plugin.settings.api.port)).onChange(async (value) => {
           const port = parseInt(value);
           if (port > 0 && port < 65536) {
@@ -1731,7 +1743,7 @@ phone=
           }
         })
       );
-      new import_obsidian3.Setting(containerEl).setName("Rate Limit").setDesc("Maximum requests per minute per API key").addText(
+      new import_obsidian3.Setting(containerEl).setName("Rate limit").setDesc("Maximum requests per minute per API key").addText(
         (text) => text.setPlaceholder("100").setValue(String(this.plugin.settings.api.rateLimit.maxRequests)).onChange(async (value) => {
           const limit = parseInt(value);
           if (limit > 0) {
@@ -1740,14 +1752,14 @@ phone=
           }
         })
       );
-      new import_obsidian3.Setting(containerEl).setName("Log API Requests").setDesc("Keep a log of all API requests for debugging").addToggle(
+      new import_obsidian3.Setting(containerEl).setName("Log API requests").setDesc("Keep a log of all API requests for debugging").addToggle(
         (toggle) => toggle.setValue(this.plugin.settings.api.logRequests).onChange(async (value) => {
           this.plugin.settings.api.logRequests = value;
           await this.plugin.saveSettings();
         })
       );
-      new import_obsidian3.Setting(containerEl).setName("API Keys").setDesc("Manage API keys for authentication").addButton(
-        (btn) => btn.setButtonText("Manage Keys").setCta().onClick(async () => {
+      new import_obsidian3.Setting(containerEl).setName("API keys").setDesc("Manage API keys for authentication").addButton(
+        (btn) => btn.setButtonText("Manage keys").setCta().onClick(async () => {
           const { ApiKeyModal: ApiKeyModal2 } = await Promise.resolve().then(() => (init_ApiKeyModal(), ApiKeyModal_exports));
           new ApiKeyModal2(this.app, this.plugin).open();
         })
@@ -1777,9 +1789,9 @@ var ResultsModal = class extends import_obsidian4.Modal {
     const { contentEl } = this;
     contentEl.empty();
     contentEl.addClass("pii-modal");
-    contentEl.createEl("h3", { text: `PII\xA0Matches (${this.matches.length})` });
+    contentEl.createEl("h3", { text: `PII matches (${this.matches.length})` });
     if (!this.matches.length) {
-      contentEl.createEl("p", { text: "No PII found \u{1F389}" });
+      contentEl.createEl("p", { text: "No PII found" });
       return;
     }
     const list = contentEl.createEl("div", { cls: "pii-list" });
@@ -1816,7 +1828,7 @@ var ResultsModal = class extends import_obsidian4.Modal {
 function registerCommands(plugin) {
   plugin.addCommand({
     id: "pii-scan",
-    name: "PII\xA0Scan",
+    name: "PII scan",
     callback: async () => {
       const results = await scanVault(plugin);
       new ResultsModal(plugin.app, results).open();
@@ -1824,13 +1836,13 @@ function registerCommands(plugin) {
   });
   plugin.addCommand({
     id: "pii-lock",
-    name: "PII\xA0Lock (encrypt)",
+    name: "PII lock (encrypt)",
     callback: () => {
     }
   });
   plugin.addCommand({
     id: "pii-unlock",
-    name: "PII\xA0Unlock (decrypt)",
+    name: "PII unlock (decrypt)",
     callback: () => {
     }
   });
@@ -1877,7 +1889,7 @@ var ApiKeyManager = class {
     for (const keyInfo of this.keys.values()) {
       if (!keyInfo.enabled)
         continue;
-      if (await this.constantTimeCompare(targetHash, keyInfo.keyHash)) {
+      if (this.constantTimeCompare(targetHash, keyInfo.keyHash)) {
         keyInfo.lastUsed = Date.now();
         keyInfo.usageCount++;
         await this.saveCallback();
@@ -1951,7 +1963,7 @@ var ApiKeyManager = class {
   /**
    * Constant-time string comparison to prevent timing attacks
    */
-  async constantTimeCompare(a, b) {
+  constantTimeCompare(a, b) {
     if (a.length !== b.length) {
       let result2 = 0;
       for (let i = 0; i < a.length; i++) {
@@ -1990,7 +2002,7 @@ var LnFApiServer = class {
   /**
    * Start the API server
    */
-  async start(settings) {
+  start(settings) {
     if (this.isRunning) {
       console.warn("API server already running");
       return;
@@ -1998,15 +2010,15 @@ var LnFApiServer = class {
     if (this.plugin.settings.apiKeys) {
       this.keyManager.loadKeys(this.plugin.settings.apiKeys);
     }
-    console.log(`API server started on port ${settings.port}`);
-    console.log(`TLS enabled: ${!!settings.tlsCertPath}`);
-    console.log(`Rate limit: ${settings.rateLimit.maxRequests} requests per ${settings.rateLimit.windowMs}ms`);
+    console.debug(`API server started on port ${settings.port}`);
+    console.debug(`TLS enabled: ${!!settings.tlsCertPath}`);
+    console.debug(`Rate limit: ${settings.rateLimit.maxRequests} requests per ${settings.rateLimit.windowMs}ms`);
     this.isRunning = true;
   }
   /**
    * Stop the API server
    */
-  async stop() {
+  stop() {
     if (!this.isRunning) {
       return;
     }
@@ -2015,7 +2027,7 @@ var LnFApiServer = class {
       this.server = null;
     }
     this.isRunning = false;
-    console.log("API server stopped");
+    console.debug("API server stopped");
   }
   /**
    * Handle incoming API request (called by Obsidian's request handler)
@@ -2066,7 +2078,6 @@ var LnFApiServer = class {
     } catch (error) {
       const statusCode = error instanceof ApiError ? error.statusCode : 500;
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      const errorCode = error instanceof ApiError ? error.code : "SERVER_ERROR" /* SERVER_ERROR */;
       this.logRequest({
         id: this.generateLogId(),
         timestamp: Date.now(),
@@ -2143,7 +2154,7 @@ var LnFApiServer = class {
     if (this.requestLogs.length > 1e3) {
       this.requestLogs = this.requestLogs.slice(-1e3);
     }
-    console.log(
+    console.debug(
       `[API] ${log.method} ${log.path} - ${log.statusCode} (${log.duration}ms)${log.error ? ` - ${log.error}` : ""}`
     );
   }
@@ -2190,26 +2201,26 @@ var PiiLockPlugin = class extends import_obsidian5.Plugin {
     await this.loadSettings();
     this.apiServer = new LnFApiServer(this.app, this);
     if (this.settings.api.enabled) {
-      await this.startApiServer();
+      this.startApiServer();
     }
     this.registerView(
       VIEW_TYPE_PII,
       (leaf) => new LnFSidebarView(leaf, this)
     );
-    this.addRibbonIcon("shield", "Lock and Find", () => this.activateSidebar());
+    this.addRibbonIcon("shield", "Lock and find", () => this.activateSidebar());
     this.addSettingTab(new PiiSettingTab(this.app, this));
     registerCommands(this);
   }
-  async onunload() {
+  onunload() {
     if (this.apiServer) {
-      await this.stopApiServer();
+      this.stopApiServer();
     }
   }
   /* ──────────── Helpers ──────────── */
   async activateSidebar() {
     const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PII);
     if (leaves.length > 0) {
-      this.app.workspace.revealLeaf(leaves[0]);
+      await this.app.workspace.revealLeaf(leaves[0]);
       return;
     }
     const leaf = this.app.workspace.getLeftLeaf(false);
@@ -2217,7 +2228,7 @@ var PiiLockPlugin = class extends import_obsidian5.Plugin {
       type: VIEW_TYPE_PII,
       active: true
     });
-    this.app.workspace.revealLeaf(leaf);
+    await this.app.workspace.revealLeaf(leaf);
   }
   async loadSettings() {
     const saved = await this.loadData();
@@ -2227,18 +2238,18 @@ var PiiLockPlugin = class extends import_obsidian5.Plugin {
     await this.saveData(this.settings);
   }
   /* ──────────── API Server Methods ──────────── */
-  async startApiServer() {
+  startApiServer() {
     if (!this.apiServer) {
       console.error("API server not initialized");
       return;
     }
-    await this.apiServer.start(this.settings.api);
+    this.apiServer.start(this.settings.api);
   }
-  async stopApiServer() {
+  stopApiServer() {
     if (!this.apiServer) {
       return;
     }
-    await this.apiServer.stop();
+    this.apiServer.stop();
   }
   getApiServer() {
     return this.apiServer;

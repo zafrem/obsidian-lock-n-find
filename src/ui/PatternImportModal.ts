@@ -7,7 +7,6 @@ import {
   importFromURL,
   importFromCSV,
   importFromMarkdown,
-  exportToJSON,
   type ExternalPattern
 } from "../externalPatterns";
 
@@ -25,11 +24,11 @@ export class PatternImportModal extends Modal {
     contentEl.empty();
     contentEl.addClass("pii-modal");
 
-    contentEl.createEl("h2", { text: "Import Patterns" });
+    contentEl.createEl("h2", { text: "Import patterns" });
 
     // Method 1: From File in Vault
     new Setting(contentEl)
-      .setName("Import from File")
+      .setName("Import from file")
       .setDesc("Import from JSON, CSV, TXT, or MD file in your vault")
       .addText((text) => {
         text.setPlaceholder("path/to/patterns.json");
@@ -59,7 +58,7 @@ export class PatternImportModal extends Modal {
             } else if (filePath.endsWith('.md')) {
               patterns = await importFromMarkdown(this.app, filePath);
             } else {
-              new Notice("Unsupported file type. Use .json, .csv, .txt, or .md");
+              new Notice("Unsupported file type - use .json, .csv, .txt, or .md");
               return;
             }
 
@@ -79,7 +78,7 @@ export class PatternImportModal extends Modal {
       .addText((text) => {
         text.setPlaceholder("https://example.com/patterns.json");
         text.inputEl.id = "url-input";
-        text.inputEl.style.width = "100%";
+        text.inputEl.setCssProps({ width: "100%" });
       })
       .addButton((btn) =>
         btn
@@ -106,8 +105,8 @@ export class PatternImportModal extends Modal {
 
     // Method 3: From GitHub Gist
     new Setting(contentEl)
-      .setName("Import from GitHub Gist")
-      .setDesc("Load patterns from a public Gist")
+      .setName("Import from GitHub gist")
+      .setDesc("Load patterns from a public gist")
       .addText((text) => {
         text.setPlaceholder("Gist ID (e.g., abc123...)");
         text.inputEl.id = "gist-input";
@@ -121,7 +120,7 @@ export class PatternImportModal extends Modal {
             const gistId = input.value.trim();
 
             if (!gistId) {
-              new Notice("Please enter a Gist ID");
+              new Notice("Please enter a gist ID");
               return;
             }
 
@@ -138,7 +137,7 @@ export class PatternImportModal extends Modal {
     contentEl.createEl("hr");
 
     // Method 4: Paste JSON
-    contentEl.createEl("h3", { text: "Or Paste JSON" });
+    contentEl.createEl("h3", { text: "Or paste JSON" });
 
     const textarea = contentEl.createEl("textarea", {
       attr: {
@@ -146,13 +145,12 @@ export class PatternImportModal extends Modal {
         placeholder: `[\n  {\n    "name": "Pattern Name",\n    "regex": "\\\\d+",\n    "description": "Description"\n  }\n]`
       }
     });
-    textarea.style.width = "100%";
-    textarea.style.fontFamily = "monospace";
+    textarea.setCssProps({ width: "100%", fontFamily: "monospace" });
 
     new Setting(contentEl)
       .addButton((btn) =>
         btn
-          .setButtonText("Import from Clipboard")
+          .setButtonText("Import from clipboard")
           .setCta()
           .onClick(async () => {
             try {
@@ -166,7 +164,7 @@ export class PatternImportModal extends Modal {
               } else {
                 new Notice("Invalid pattern format");
               }
-            } catch (error) {
+            } catch {
               new Notice("Failed to parse JSON");
             }
           })
@@ -176,7 +174,7 @@ export class PatternImportModal extends Modal {
 
     // Quick Links
     const linksDiv = contentEl.createDiv("pii-quick-links");
-    linksDiv.createEl("h3", { text: "Quick Links" });
+    linksDiv.createEl("h3", { text: "Quick links" });
 
     const linksList = linksDiv.createEl("ul");
 

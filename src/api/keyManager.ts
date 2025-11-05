@@ -54,7 +54,7 @@ export class ApiKeyManager {
     for (const keyInfo of this.keys.values()) {
       if (!keyInfo.enabled) continue;
 
-      if (await this.constantTimeCompare(targetHash, keyInfo.keyHash)) {
+      if (this.constantTimeCompare(targetHash, keyInfo.keyHash)) {
         // Update usage stats
         keyInfo.lastUsed = Date.now();
         keyInfo.usageCount++;
@@ -143,13 +143,14 @@ export class ApiKeyManager {
   /**
    * Constant-time string comparison to prevent timing attacks
    */
-  private async constantTimeCompare(a: string, b: string): Promise<boolean> {
+  private constantTimeCompare(a: string, b: string): boolean {
     if (a.length !== b.length) {
-      // To maintain constant time, still do a comparison
+      // To maintain constant time, still do a comparison (result intentionally unused)
       let result = 0;
       for (let i = 0; i < a.length; i++) {
         result |= a.charCodeAt(i) ^ b.charCodeAt(i % b.length);
       }
+      void result; // Explicitly mark as intentionally unused for timing attack prevention
       return false;
     }
 

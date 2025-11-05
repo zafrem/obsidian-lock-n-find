@@ -1,5 +1,5 @@
 // ui/ResultsModal.ts
-import { App, Modal, MarkdownView, TFile } from "obsidian";
+import { App, Modal, MarkdownView } from "obsidian";
 import type { MatchInfo } from "../src/scanner";
 
 export class ResultsModal extends Modal {
@@ -14,10 +14,10 @@ export class ResultsModal extends Modal {
     const { contentEl } = this;
     contentEl.empty();
     contentEl.addClass("pii-modal");
-    contentEl.createEl("h3", { text: `PII Matches (${this.matches.length})` });
+    contentEl.createEl("h3", { text: `PII matches (${this.matches.length})` });
 
     if (!this.matches.length) {
-      contentEl.createEl("p", { text: "No PII found 🎉" });
+      contentEl.createEl("p", { text: "No PII found" });
       return;
     }
 
@@ -28,7 +28,7 @@ export class ResultsModal extends Modal {
       const item = list.createEl("div", { cls: "pii-item" });
 
       /* ✔︎ Checkbox */
-      const cb = item.createEl("input", { type: "checkbox" }) as HTMLInputElement;
+      const cb = item.createEl("input", { type: "checkbox" });
       cb.checked = true; // Default selection
 
       /* Matching string + location */

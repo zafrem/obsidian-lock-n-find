@@ -1,6 +1,5 @@
 import { Notice } from "obsidian";
 import type PiiLockPlugin from "../../main";
-import { PatternWithMetadata } from "../types/settings";
 
 /* ──────────────── Default Patterns Utilities ──────────────── */
 export interface CountryPattern {

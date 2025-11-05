@@ -19,21 +19,21 @@ export class ApiKeyModal extends Modal {
     contentEl.addClass("pii-modal");
 
     // Title
-    contentEl.createEl("h2", { text: "API Key Management" });
+    contentEl.createEl("h2", { text: "API key management" });
 
     // Description
     contentEl.createEl("p", {
-      text: "Generate and manage API keys for external access to Lock & Find.",
+      text: "Generate and manage API keys for external access to Lock & Find",
       cls: "pii-modal-description",
     });
 
     // Generate new key button
     new Setting(contentEl)
-      .setName("Generate New API Key")
+      .setName("Generate new API key")
       .setDesc("Create a new API key for authentication")
       .addButton((btn) =>
         btn
-          .setButtonText("Generate Key")
+          .setButtonText("Generate key")
           .setCta()
           .onClick(async () => {
             await this.generateNewKey();
@@ -43,7 +43,7 @@ export class ApiKeyModal extends Modal {
     contentEl.createEl("hr");
 
     // Keys list
-    contentEl.createEl("h3", { text: "Existing API Keys" });
+    contentEl.createEl("h3", { text: "Existing API keys" });
     this.keysList = contentEl.createDiv("pii-keys-list");
 
     this.renderKeys();
@@ -99,7 +99,7 @@ export class ApiKeyModal extends Modal {
       });
 
       // Status badge
-      const status = keyItem.createEl("span", {
+      keyItem.createEl("span", {
         cls: key.enabled ? "pii-status-active" : "pii-status-inactive",
         text: key.enabled ? "Active" : "Revoked",
       });
@@ -248,7 +248,7 @@ class KeyNameModal extends Modal {
     contentEl.empty();
     contentEl.addClass("pii-modal");
 
-    contentEl.createEl("h3", { text: "Enter Key Name" });
+    contentEl.createEl("h3", { text: "Enter key name" });
     contentEl.createEl("p", {
       text: "Give this API key a descriptive name",
       cls: "pii-modal-description",
@@ -309,7 +309,7 @@ class KeyDisplayModal extends Modal {
     contentEl.empty();
     contentEl.addClass("pii-modal");
 
-    contentEl.createEl("h3", { text: "API Key Generated" });
+    contentEl.createEl("h3", { text: "API key generated" });
 
     contentEl.createEl("p", {
       text: `Your API key "${this.name}" has been generated. Copy it now - you won't be able to see it again!`,
@@ -317,7 +317,7 @@ class KeyDisplayModal extends Modal {
     });
 
     const keyContainer = contentEl.createDiv("pii-key-display");
-    const keyText = keyContainer.createEl("code", {
+    keyContainer.createEl("code", {
       text: this.key,
       cls: "pii-key-text",
     });
@@ -363,7 +363,7 @@ class ConfirmModal extends Modal {
     contentEl.empty();
     contentEl.addClass("pii-modal");
 
-    contentEl.createEl("h3", { text: "Confirm Action" });
+    contentEl.createEl("h3", { text: "Confirm action" });
     contentEl.createEl("p", { text: this.message });
 
     const buttonContainer = contentEl.createDiv({ cls: "pii-modal-buttons" });

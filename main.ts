@@ -17,7 +17,7 @@ export default class PiiLockPlugin extends Plugin {
 
     // Start API server if enabled
     if (this.settings.api.enabled) {
-      await this.startApiServer();
+      this.startApiServer();
     }
 
     // Register the sidebar view
@@ -27,17 +27,17 @@ export default class PiiLockPlugin extends Plugin {
     );
 
     // shield icon – sidebar toggle
-    this.addRibbonIcon("shield", "Lock and Find", () => this.activateSidebar());
+    this.addRibbonIcon("shield", "Lock and find", () => this.activateSidebar());
 
     // settings tab + commands
     this.addSettingTab(new PiiSettingTab(this.app, this));
     registerCommands(this);
   }
 
-  async onunload() {
+  onunload() {
     // Stop API server if running
     if (this.apiServer) {
-      await this.stopApiServer();
+      this.stopApiServer();
     }
 
     // Don't detach leaves in onunload - this is an antipattern
@@ -48,21 +48,21 @@ export default class PiiLockPlugin extends Plugin {
   private async activateSidebar() {
     // Focus if already open, otherwise create new leaf
     const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PII);
-    
+
     if (leaves.length > 0) {
       // If a leaf with our view already exists, reveal it
-      this.app.workspace.revealLeaf(leaves[0]);
+      await this.app.workspace.revealLeaf(leaves[0]);
       return;
     }
-    
+
     // Otherwise create a new leaf in the left sidebar
     const leaf = this.app.workspace.getLeftLeaf(false);
     await leaf.setViewState({
       type: VIEW_TYPE_PII,
       active: true,
     });
-    
-    this.app.workspace.revealLeaf(leaf);
+
+    await this.app.workspace.revealLeaf(leaf);
   }
 
   private async loadSettings() {
@@ -75,19 +75,19 @@ export default class PiiLockPlugin extends Plugin {
   }
 
   /* ──────────── API Server Methods ──────────── */
-  async startApiServer(): Promise<void> {
+  startApiServer(): void {
     if (!this.apiServer) {
       console.error("API server not initialized");
       return;
     }
-    await this.apiServer.start(this.settings.api);
+    this.apiServer.start(this.settings.api);
   }
 
-  async stopApiServer(): Promise<void> {
+  stopApiServer(): void {
     if (!this.apiServer) {
       return;
     }
-    await this.apiServer.stop();
+    this.apiServer.stop();
   }
 
   getApiServer(): LnFApiServer | null {

@@ -1,7 +1,7 @@
 // src/externalPatterns.ts
 // Simple ways to import/update patterns from external sources
 
-import { Notice } from "obsidian";
+import { Notice, TFile, requestUrl } from "obsidian";
 import type { App } from "obsidian";
 
 export interface ExternalPattern {
@@ -26,11 +26,11 @@ export interface PatternSource {
 export async function importFromJSON(app: App, filePath: string): Promise<ExternalPattern[]> {
   try {
     const file = app.vault.getAbstractFileByPath(filePath);
-    if (!file) {
+    if (!file || !(file instanceof TFile)) {
       throw new Error(`File not found: ${filePath}`);
     }
 
-    const content = await app.vault.read(file as any);
+    const content = await app.vault.read(file);
     const patterns = JSON.parse(content);
 
     new Notice(`Imported ${patterns.length} patterns from ${filePath}`);
@@ -51,11 +51,11 @@ export async function importFromJSON(app: App, filePath: string): Promise<Extern
 export async function importFromTextFile(app: App, filePath: string): Promise<ExternalPattern[]> {
   try {
     const file = app.vault.getAbstractFileByPath(filePath);
-    if (!file) {
+    if (!file || !(file instanceof TFile)) {
       throw new Error(`File not found: ${filePath}`);
     }
 
-    const content = await app.vault.read(file as any);
+    const content = await app.vault.read(file);
     const lines = content.split('\n').filter(line => line.trim() && !line.startsWith('#'));
 
     const patterns: ExternalPattern[] = lines.map(line => {
@@ -82,12 +82,8 @@ export async function importFromTextFile(app: App, filePath: string): Promise<Ex
  */
 export async function importFromURL(url: string): Promise<ExternalPattern[]> {
   try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-
-    const patterns = await response.json();
+    const response = await requestUrl({ url });
+    const patterns = response.json;
     new Notice(`Downloaded ${patterns.length} patterns from ${url}`);
     return patterns;
   } catch (error) {
@@ -103,11 +99,11 @@ export async function importFromURL(url: string): Promise<ExternalPattern[]> {
 export async function importFromCSV(app: App, filePath: string): Promise<ExternalPattern[]> {
   try {
     const file = app.vault.getAbstractFileByPath(filePath);
-    if (!file) {
+    if (!file || !(file instanceof TFile)) {
       throw new Error(`File not found: ${filePath}`);
     }
 
-    const content = await app.vault.read(file as any);
+    const content = await app.vault.read(file);
     const lines = content.split('\n').filter(line => line.trim());
 
     // Skip header if present
@@ -141,11 +137,11 @@ export async function importFromCSV(app: App, filePath: string): Promise<Externa
 export async function importFromMarkdown(app: App, filePath: string): Promise<ExternalPattern[]> {
   try {
     const file = app.vault.getAbstractFileByPath(filePath);
-    if (!file) {
+    if (!file || !(file instanceof TFile)) {
       throw new Error(`File not found: ${filePath}`);
     }
 
-    const content = await app.vault.read(file as any);
+    const content = await app.vault.read(file);
     const lines = content.split('\n');
 
     const patterns: ExternalPattern[] = [];
@@ -229,7 +225,7 @@ export async function exportToJSON(app: App, patterns: ExternalPattern[], filePa
  */
 export async function syncWithGist(gistId: string, token?: string): Promise<ExternalPattern[]> {
   try {
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       'Accept': 'application/vnd.github.v3+json'
     };
 
@@ -237,17 +233,20 @@ export async function syncWithGist(gistId: string, token?: string): Promise<Exte
       headers['Authorization'] = `token ${token}`;
     }
 
-    const response = await fetch(`https://api.github.com/gists/${gistId}`, { headers });
-    const data = await response.json();
+    const response = await requestUrl({
+      url: `https://api.github.com/gists/${gistId}`,
+      headers
+    });
+    const data = response.json;
 
     // Assuming the gist has a file named 'patterns.json'
     const file = data.files['patterns.json'] || data.files[Object.keys(data.files)[0]];
     const patterns = JSON.parse(file.content);
 
-    new Notice(`Synced ${patterns.length} patterns from GitHub Gist`);
+    new Notice(`Synced ${patterns.length} patterns from GitHub gist`);
     return patterns;
   } catch (error) {
-    new Notice(`Failed to sync with Gist: ${error.message}`);
+    new Notice(`Failed to sync with gist: ${error.message}`);
     return [];
   }
 }
@@ -266,7 +265,7 @@ export function setupFileDrop(element: HTMLElement, onImport: (patterns: Externa
     element.removeClass('pii-drop-active');
   });
 
-  element.addEventListener('drop', async (e) => {
+  element.addEventListener('drop', (e) => {
     e.preventDefault();
     element.removeClass('pii-drop-active');
 
@@ -326,11 +325,11 @@ export class PatternAutoUpdater {
 
   start(): void {
     // Update immediately
-    this.update();
+    void this.update();
 
     // Then update periodically
     this.intervalId = window.setInterval(
-      () => this.update(),
+      () => void this.update(),
       this.updateIntervalHours * 60 * 60 * 1000
     );
   }

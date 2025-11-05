@@ -1,4 +1,5 @@
 // api-tests/src/client.ts
+/* eslint-disable no-restricted-imports */
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import https from 'https';
 
@@ -24,7 +25,7 @@ export interface DecryptResponse {
   plaintext: string;
 }
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;

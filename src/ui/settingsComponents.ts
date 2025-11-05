@@ -35,7 +35,7 @@ export function createPatternListUI(
       .addExtraButton((btn) =>
         btn
           .setIcon("trash")
-          .setTooltip("remove")
+          .setTooltip("Remove")
           .onClick(async () => {
             plugin.settings.patterns.splice(idx, 1);
             plugin.settings.patternMetadata.splice(idx, 1);
@@ -103,11 +103,11 @@ export function createCountrySelectionUI(
   const selectedCountryNames = selectedCountries.map(c => defaultPatterns[c]?.displayName || c).join(', ');
   
   new Setting(container)
-    .setName("Selected Countries")
+    .setName("Selected countries")
     .setDesc(selectedCountries.length > 0 ? selectedCountryNames : "No countries selected")
     .addButton((btn) =>
       btn
-        .setButtonText("Clear All")
+        .setButtonText("Clear all")
         .onClick(async () => {
           plugin.settings.selectedCountries = [];
           // Keep only user patterns
@@ -121,7 +121,7 @@ export function createCountrySelectionUI(
     );
 
   // Country selection buttons
-  container.createEl("h4", { text: "Add Country Patterns" });
+  container.createEl("h4", { text: "Add country patterns" });
   const countryButtonsContainer = container.createDiv("pii-country-buttons");
   
   const availableCountries = Object.keys(defaultPatterns).filter(c => c !== 'None');
@@ -190,7 +190,7 @@ export function createPasswordManagementUI(
   // Password status
   const hasStoredPassword = !!plugin.settings.storedPassword;
   const statusText = hasStoredPassword ? "Password is currently stored" : "No password stored";
-  const statusEl = container.createEl("p", { 
+  container.createEl("p", {
     text: statusText,
     cls: hasStoredPassword ? "pii-password-status-active" : "pii-password-status-inactive"
   });
@@ -212,7 +212,7 @@ export function createPasswordManagementUI(
   // Clear password button (only show if password is stored)
   if (hasStoredPassword) {
     new Setting(container)
-      .setName("Clear Stored Password")
+      .setName("Clear stored password")
       .setDesc("Remove the stored password. You will be prompted for password on each operation.")
       .addButton((btn) =>
         btn

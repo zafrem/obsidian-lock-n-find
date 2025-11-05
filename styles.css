@@ -7,6 +7,7 @@
 .pii-btn-bar,
 .pii-btn-bar-bottom {
   display: flex;
+  flex-wrap: wrap;
   padding: 12px 16px;
   align-items: center;
   gap: 8px;
@@ -300,13 +301,15 @@
 /* Mode toggle styling */
 .pii-mode-toggle {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin: 8px 0;
   padding: 8px 16px;
 }
 
 .pii-mode-toggle button {
-  flex: 1;
+  flex: 1 1 calc(50% - 4px);
+  min-width: 120px;
   padding: 8px 16px;
   border-radius: 4px;
   font-size: 14px;
@@ -318,26 +321,35 @@
 /* Scan controls styling */
 .pii-scan-controls {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin: 8px 0;
   padding: 8px 16px;
 }
 
 .pii-btn-half {
-  flex: 1;
+  flex: 1 1 calc(50% - 4px);
+  min-width: 120px;
 }
 
 /* Search container styling */
 .pii-search-container {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin: 8px 0;
   padding: 8px 16px;
   align-items: center;
 }
 
+.pii-search-container button {
+  flex: 0 1 auto;
+  min-width: 100px;
+}
+
 .pii-search-input {
-  flex: 1;
+  flex: 1 1 200px;
+  min-width: 150px;
   padding: 8px 12px;
   border-radius: 4px;
   border: 1px solid var(--background-modifier-border);
@@ -592,8 +604,8 @@
   }
 }
 
-/* Extra small devices (phones in portrait, less than 400px) */
-@media (max-width: 400px) {
+/* Narrow sidebar/container (useful for desktop sidebar resizing) */
+@media (max-width: 600px) {
   .pii-btn-bar,
   .pii-btn-bar-bottom,
   .pii-mode-toggle,
@@ -613,7 +625,10 @@
   .pii-search-input {
     width: 100%;
   }
+}
 
+/* Extra small devices (phones in portrait, less than 400px) */
+@media (max-width: 400px) {
   .pii-row-text {
     font-size: 14px;
   }

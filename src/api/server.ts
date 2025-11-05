@@ -18,7 +18,7 @@ export class LnFApiServer {
   private keyManager: ApiKeyManager;
   private requestLogs: RequestLog[] = [];
   private rateLimitMap: Map<string, number[]> = new Map();
-  private server: any = null;
+  private server: unknown = null;
   private isRunning = false;
 
   constructor(private app: App, private plugin: PiiLockPlugin) {
@@ -30,7 +30,7 @@ export class LnFApiServer {
   /**
    * Start the API server
    */
-  async start(settings: ApiSettings): Promise<void> {
+  start(settings: ApiSettings): void {
     if (this.isRunning) {
       console.warn("API server already running");
       return;
@@ -44,9 +44,9 @@ export class LnFApiServer {
     // In Obsidian plugin context, we cannot create a real HTTP server
     // Instead, we'll use the Obsidian local REST API if available
     // For now, this is a placeholder for the actual implementation
-    console.log(`API server started on port ${settings.port}`);
-    console.log(`TLS enabled: ${!!settings.tlsCertPath}`);
-    console.log(`Rate limit: ${settings.rateLimit.maxRequests} requests per ${settings.rateLimit.windowMs}ms`);
+    console.debug(`API server started on port ${settings.port}`);
+    console.debug(`TLS enabled: ${!!settings.tlsCertPath}`);
+    console.debug(`Rate limit: ${settings.rateLimit.maxRequests} requests per ${settings.rateLimit.windowMs}ms`);
 
     this.isRunning = true;
   }
@@ -54,7 +54,7 @@ export class LnFApiServer {
   /**
    * Stop the API server
    */
-  async stop(): Promise<void> {
+  stop(): void {
     if (!this.isRunning) {
       return;
     }
@@ -66,7 +66,7 @@ export class LnFApiServer {
     }
 
     this.isRunning = false;
-    console.log("API server stopped");
+    console.debug("API server stopped");
   }
 
   /**
@@ -76,7 +76,7 @@ export class LnFApiServer {
     method: string,
     path: string,
     headers: Record<string, string>,
-    body: any
+    body: unknown
   ): Promise<ApiResponse> {
     const startTime = Date.now();
     let keyId = "unknown";
@@ -134,7 +134,6 @@ export class LnFApiServer {
     } catch (error) {
       const statusCode = error instanceof ApiError ? error.statusCode : 500;
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      const errorCode = error instanceof ApiError ? error.code : ApiErrorCode.SERVER_ERROR;
 
       // Log failed request
       this.logRequest({
@@ -162,8 +161,8 @@ export class LnFApiServer {
   private async routeRequest(
     method: string,
     path: string,
-    body: any
-  ): Promise<any> {
+    body: unknown
+  ): Promise<unknown> {
     // Import route handlers dynamically
     const { handleSearchRequest } = await import("./routes/search");
     const { handleEncryptRequest } = await import("./routes/encrypt");
@@ -242,7 +241,7 @@ export class LnFApiServer {
     }
 
     // Also log to console for debugging
-    console.log(
+    console.debug(
       `[API] ${log.method} ${log.path} - ${log.statusCode} (${log.duration}ms)${
         log.error ? ` - ${log.error}` : ""
       }`
