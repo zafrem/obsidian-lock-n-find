@@ -6,7 +6,7 @@ export function registerCommands(plugin: PiiLockPlugin) {
   /* 1. Scan */
   plugin.addCommand({
     id: "pii-scan",
-    name: "PII scan",
+    name: "Pii scan",
     callback: async () => {
       const results = await scanVault(plugin);
       new ResultsModal(plugin.app, results).open();
@@ -16,7 +16,7 @@ export function registerCommands(plugin: PiiLockPlugin) {
   /* 2. Lock (Matching tokenization + encrypted storage) */
   plugin.addCommand({
     id: "pii-lock",
-    name: "PII lock (encrypt)",
+    name: "Pii lock (encrypt)",
     callback: () => {
       // TODO: Actual implementation - matches → token replacement, encrypt(), saveData()
     },
@@ -25,7 +25,7 @@ export function registerCommands(plugin: PiiLockPlugin) {
   /* 3. Unlock */
   plugin.addCommand({
     id: "pii-unlock",
-    name: "PII unlock (decrypt)",
+    name: "Pii unlock (decrypt)",
     callback: () => {
       // TODO: Enter password → decrypt() → revert token
     },

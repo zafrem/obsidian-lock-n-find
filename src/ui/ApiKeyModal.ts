@@ -23,7 +23,7 @@ export class ApiKeyModal extends Modal {
 
     // Description
     contentEl.createEl("p", {
-      text: "Generate and manage API keys for external access to Lock & Find",
+      text: "Generate and manage api keys for external access to lock & find.",
       cls: "pii-modal-description",
     });
 

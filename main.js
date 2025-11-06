@@ -399,7 +399,7 @@ var init_LnFSidebarView = __esm({
       getIcon() {
         return "shield";
       }
-      async onOpen() {
+      onOpen() {
         const e = this.containerEl;
         e.empty();
         this.setupTextSelectionDragDrop();
@@ -489,7 +489,7 @@ var init_LnFSidebarView = __esm({
         unlockBtn.appendChild(createButtonContent(createUnlockIcon(), "Unlock All"));
         unlockBtn.onclick = () => this.unlock();
       }
-      async onClose() {
+      onClose() {
         this.containerEl.empty();
         this.cleanupTextSelectionDragDrop();
       }
@@ -860,7 +860,7 @@ var init_ApiKeyModal = __esm({
         contentEl.addClass("pii-modal");
         contentEl.createEl("h2", { text: "API key management" });
         contentEl.createEl("p", {
-          text: "Generate and manage API keys for external access to Lock & Find",
+          text: "Generate and manage api keys for external access to lock & find.",
           cls: "pii-modal-description"
         });
         new import_obsidian2.Setting(contentEl).setName("Generate new API key").setDesc("Create a new API key for authentication").addButton(
@@ -1718,8 +1718,8 @@ phone=
       );
     }
     containerEl.createEl("hr");
-    new import_obsidian3.Setting(containerEl).setName("API settings").setDesc("Enable external API access for programmatic search and encryption operations").setHeading();
-    new import_obsidian3.Setting(containerEl).setName("Enable API server").setDesc("Allow external applications to access Lock & Find via REST API").addToggle(
+    new import_obsidian3.Setting(containerEl).setName("API").setDesc("Enable external API access for programmatic search and encryption operations").setHeading();
+    new import_obsidian3.Setting(containerEl).setName("Enable API server").setDesc("Allow external applications to access lock & find via rest api.").addToggle(
       (toggle) => toggle.setValue(this.plugin.settings.api.enabled).onChange(async (value) => {
         this.plugin.settings.api.enabled = value;
         await this.plugin.saveSettings();
@@ -1791,7 +1791,7 @@ var ResultsModal = class extends import_obsidian4.Modal {
     contentEl.addClass("pii-modal");
     contentEl.createEl("h3", { text: `PII matches (${this.matches.length})` });
     if (!this.matches.length) {
-      contentEl.createEl("p", { text: "No PII found" });
+      contentEl.createEl("p", { text: "No pii found" });
       return;
     }
     const list = contentEl.createEl("div", { cls: "pii-list" });
@@ -1828,7 +1828,7 @@ var ResultsModal = class extends import_obsidian4.Modal {
 function registerCommands(plugin) {
   plugin.addCommand({
     id: "pii-scan",
-    name: "PII scan",
+    name: "Pii scan",
     callback: async () => {
       const results = await scanVault(plugin);
       new ResultsModal(plugin.app, results).open();
@@ -1836,13 +1836,13 @@ function registerCommands(plugin) {
   });
   plugin.addCommand({
     id: "pii-lock",
-    name: "PII lock (encrypt)",
+    name: "Pii lock (encrypt)",
     callback: () => {
     }
   });
   plugin.addCommand({
     id: "pii-unlock",
-    name: "PII unlock (decrypt)",
+    name: "Pii unlock (decrypt)",
     callback: () => {
     }
   });

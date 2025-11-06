@@ -1,7 +1,6 @@
 // api-tests/src/client.ts
-/* eslint-disable no-restricted-imports */
+/* eslint-disable no-restricted-imports -- API client needs axios for HTTP operations */
 import axios, { AxiosInstance, AxiosError } from 'axios';
-import https from 'https';
 
 export interface SearchOptions {
   caseSensitive?: boolean;
@@ -51,14 +50,6 @@ export class LnFApiClient {
   private client: AxiosInstance;
 
   constructor(private options: ClientOptions) {
-    // Create HTTPS agent with TLS options
-    const httpsAgent = new https.Agent({
-      rejectUnauthorized: options.tlsOptions?.rejectUnauthorized ?? true,
-      cert: options.tlsOptions?.cert,
-      key: options.tlsOptions?.key,
-      ca: options.tlsOptions?.ca,
-    });
-
     this.client = axios.create({
       baseURL: options.baseUrl,
       timeout: options.timeout || 30000,
@@ -66,7 +57,12 @@ export class LnFApiClient {
         'Content-Type': 'application/json',
         'X-API-Key': options.apiKey,
       },
-      httpsAgent,
+      httpsAgent: options.tlsOptions ? {
+        rejectUnauthorized: options.tlsOptions.rejectUnauthorized ?? true,
+        cert: options.tlsOptions.cert,
+        key: options.tlsOptions.key,
+        ca: options.tlsOptions.ca,
+      } : undefined,
     });
 
     // Add response interceptor for error handling

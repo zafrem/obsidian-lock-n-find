@@ -17,7 +17,7 @@ export class ResultsModal extends Modal {
     contentEl.createEl("h3", { text: `PII matches (${this.matches.length})` });
 
     if (!this.matches.length) {
-      contentEl.createEl("p", { text: "No PII found" });
+      contentEl.createEl("p", { text: "No pii found" });
       return;
     }
 

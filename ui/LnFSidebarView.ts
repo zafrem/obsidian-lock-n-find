@@ -325,7 +325,7 @@ export class LnFSidebarView extends ItemView {
   getDisplayText(){return "Lock and find";}
   getIcon(){return "shield";}
 
-  async onOpen(){
+  onOpen(){
     const e=this.containerEl; e.empty();
     
     // Set up global text selection listeners for drag and drop
@@ -448,7 +448,7 @@ export class LnFSidebarView extends ItemView {
     unlockBtn.appendChild(createButtonContent(createUnlockIcon(), 'Unlock All'));
     unlockBtn.onclick=()=>this.unlock();
   }
-  async onClose(){
+  onClose(){
     this.containerEl.empty();
     this.cleanupTextSelectionDragDrop();
   }

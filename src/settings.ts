@@ -7,6 +7,7 @@ import {
   import type PiiLockPlugin from "../main";
   import type { ApiSettings } from "./api/types";
   import { DEFAULT_API_SETTINGS } from "./api/types";
+  import type { CountryPattern } from "./utils/countryPatterns";
   
   /* ──────────────── Type and Default Value ──────────────── */
   export interface PatternWithMetadata {
@@ -41,13 +42,6 @@ import {
   };
 
   /* ──────────────── Default Patterns Utilities ──────────────── */
-  export interface CountryPattern {
-    displayName: string; // Human readable name like "United States"
-    name: string;        // Regex pattern for person names
-    address: string;     // Regex pattern for addresses/IDs
-    phone: string;       // Regex pattern for phone numbers
-  }
-
   export async function loadDefaultPatternsFromFile(plugin: PiiLockPlugin): Promise<string> {
     try {
       const adapter = plugin.app.vault.adapter;
@@ -655,14 +649,14 @@ phone=
       containerEl.createEl("hr");
 
       new Setting(containerEl)
-        .setName("API settings")
+        .setName("API")
         .setDesc("Enable external API access for programmatic search and encryption operations")
         .setHeading();
 
       // API Enable/Disable
       new Setting(containerEl)
         .setName("Enable API server")
-        .setDesc("Allow external applications to access Lock & Find via REST API")
+        .setDesc("Allow external applications to access lock & find via rest api.")
         .addToggle((toggle) =>
           toggle
             .setValue(this.plugin.settings.api.enabled)
