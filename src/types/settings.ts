@@ -1,4 +1,3 @@
-import type { CountryPattern } from "../utils/countryPatterns";
 import type { ApiSettings, KeyInfo } from "../api/types";
 import { DEFAULT_API_SETTINGS } from "../api/types";
 
