@@ -281,7 +281,7 @@ import {
   /* ──────────────── Setting Tab ──────────────── */
   export class PiiSettingTab extends PluginSettingTab {
     plugin: PiiLockPlugin;
-    private managePatternsSectionOpen: boolean = true; // Track the open state
+    private managePatternsSectionOpen = true; // Track the open state
 
     constructor(app: App, plugin: PiiLockPlugin) {
       super(app, plugin);
@@ -656,7 +656,7 @@ phone=
       // API Enable/Disable
       new Setting(containerEl)
         .setName("Enable API server")
-        .setDesc("Allow external applications to access lock & find via rest api.")
+        .setDesc("Allow external applications to access lock & find via REST API.")
         .addToggle((toggle) =>
           toggle
             .setValue(this.plugin.settings.api.enabled)

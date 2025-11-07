@@ -1,5 +1,5 @@
 // api-tests/src/client.ts
-/* eslint-disable no-restricted-imports -- API client needs axios for HTTP operations */
+ 
 import axios, { AxiosInstance, AxiosError } from 'axios';
 
 export interface SearchOptions {

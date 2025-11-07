@@ -703,7 +703,7 @@ export class LnFSidebarView extends ItemView {
   }
 
   /* -------- Get Password (with caching) -------- */
-  private async getPassword(isEncrypt: boolean = false): Promise<string | null> {
+  private async getPassword(isEncrypt = false): Promise<string | null> {
     // If we have a cached password, use it
     if (this.cachedPassword) {
       return this.cachedPassword;

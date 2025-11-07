@@ -102,7 +102,6 @@ describe('Security Tests', () => {
     test('regex DoS patterns are rejected', async () => {
       // ReDoS pattern
       const evilRegex = '(a+)+$';
-      const longString = 'a'.repeat(100);
 
       // Should either reject or complete quickly
       const start = Date.now();
