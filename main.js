@@ -860,7 +860,7 @@ var init_ApiKeyModal = __esm({
         contentEl.addClass("pii-modal");
         contentEl.createEl("h2", { text: "API key management" });
         contentEl.createEl("p", {
-          text: "Generate and manage api keys for external access to lock & find.",
+          text: "Generate and manage API keys for external access to lock & find.",
           cls: "pii-modal-description"
         });
         new import_obsidian2.Setting(contentEl).setName("Generate new API key").setDesc("Create a new API key for authentication").addButton(
@@ -1719,7 +1719,7 @@ phone=
     }
     containerEl.createEl("hr");
     new import_obsidian3.Setting(containerEl).setName("API").setDesc("Enable external API access for programmatic search and encryption operations").setHeading();
-    new import_obsidian3.Setting(containerEl).setName("Enable API server").setDesc("Allow external applications to access lock & find via rest api.").addToggle(
+    new import_obsidian3.Setting(containerEl).setName("Enable API server").setDesc("Allow external applications to access lock & find via REST API.").addToggle(
       (toggle) => toggle.setValue(this.plugin.settings.api.enabled).onChange(async (value) => {
         this.plugin.settings.api.enabled = value;
         await this.plugin.saveSettings();
