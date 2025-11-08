@@ -1,6 +1,6 @@
 // api-tests/src/client.ts
  
-import axios, { AxiosInstance, AxiosError } from 'axios';
+import { requestUrl, RequestUrlParam, RequestUrlResponse } from 'obsidian';
 
 export interface SearchOptions {
   caseSensitive?: boolean;
@@ -47,41 +47,41 @@ export interface ClientOptions {
  * Client for Lock & Find API
  */
 export class LnFApiClient {
-  private client: AxiosInstance;
+  constructor(private options: ClientOptions) {}
 
-  constructor(private options: ClientOptions) {
-    this.client = axios.create({
-      baseURL: options.baseUrl,
-      timeout: options.timeout || 30000,
+  private async request<T>(
+    method: 'GET' | 'POST',
+    path: string,
+    body?: unknown
+  ): Promise<ApiResponse<T>> {
+    const url = `${this.options.baseUrl}${path}`;
+    
+    const requestParams: RequestUrlParam = {
+      url,
+      method,
       headers: {
         'Content-Type': 'application/json',
-        'X-API-Key': options.apiKey,
+        'X-API-Key': this.options.apiKey,
       },
-      httpsAgent: options.tlsOptions ? {
-        rejectUnauthorized: options.tlsOptions.rejectUnauthorized ?? true,
-        cert: options.tlsOptions.cert,
-        key: options.tlsOptions.key,
-        ca: options.tlsOptions.ca,
-      } : undefined,
-    });
+      body: body ? JSON.stringify(body) : undefined,
+      throw: false,
+    };
 
-    // Add response interceptor for error handling
-    this.client.interceptors.response.use(
-      (response) => response,
-      (error: AxiosError) => {
-        if (error.response) {
-          // Server responded with error
-          const data = error.response.data as ApiResponse;
-          throw new Error(data.error || `API Error: ${error.response.status}`);
-        } else if (error.request) {
-          // Request was made but no response received
-          throw new Error('No response from API server. Is it running?');
-        } else {
-          // Error setting up request
-          throw new Error(`Request error: ${error.message}`);
-        }
+    try {
+      const response: RequestUrlResponse = await requestUrl(requestParams);
+      
+      if (response.status >= 400) {
+        const data = response.json as ApiResponse<T>;
+        throw new Error(data.error || `API Error: ${response.status}`);
       }
-    );
+
+      return response.json as ApiResponse<T>;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('No response from API server. Is it running?');
+    }
   }
 
   /**
@@ -91,7 +91,8 @@ export class LnFApiClient {
     query: string,
     options?: SearchOptions
   ): Promise<SearchResult[]> {
-    const response = await this.client.post<ApiResponse<SearchResult[]>>(
+    const response = await this.request<SearchResult[]>(
+      'POST',
       '/api/search/regex',
       {
         query,
@@ -101,11 +102,11 @@ export class LnFApiClient {
       }
     );
 
-    if (!response.data.success) {
-      throw new Error(response.data.error || 'Search failed');
+    if (!response.success) {
+      throw new Error(response.error || 'Search failed');
     }
 
-    return response.data.data || [];
+    return response.data || [];
   }
 
   /**
@@ -115,7 +116,8 @@ export class LnFApiClient {
     query: string,
     options?: SearchOptions
   ): Promise<SearchResult[]> {
-    const response = await this.client.post<ApiResponse<SearchResult[]>>(
+    const response = await this.request<SearchResult[]>(
+      'POST',
       '/api/search/direct',
       {
         query,
@@ -125,18 +127,19 @@ export class LnFApiClient {
       }
     );
 
-    if (!response.data.success) {
-      throw new Error(response.data.error || 'Search failed');
+    if (!response.success) {
+      throw new Error(response.error || 'Search failed');
     }
 
-    return response.data.data || [];
+    return response.data || [];
   }
 
   /**
    * Encrypt text
    */
   async encrypt(text: string, password?: string): Promise<string> {
-    const response = await this.client.post<ApiResponse<EncryptResponse>>(
+    const response = await this.request<EncryptResponse>(
+      'POST',
       '/api/encrypt',
       {
         text,
@@ -145,18 +148,19 @@ export class LnFApiClient {
       }
     );
 
-    if (!response.data.success) {
-      throw new Error(response.data.error || 'Encryption failed');
+    if (!response.success) {
+      throw new Error(response.error || 'Encryption failed');
     }
 
-    return response.data.data?.ciphertext || '';
+    return response.data?.ciphertext || '';
   }
 
   /**
    * Decrypt ciphertext
    */
   async decrypt(ciphertext: string, password: string): Promise<string> {
-    const response = await this.client.post<ApiResponse<DecryptResponse>>(
+    const response = await this.request<DecryptResponse>(
+      'POST',
       '/api/decrypt',
       {
         ciphertext,
@@ -165,27 +169,27 @@ export class LnFApiClient {
       }
     );
 
-    if (!response.data.success) {
-      throw new Error(response.data.error || 'Decryption failed');
+    if (!response.success) {
+      throw new Error(response.error || 'Decryption failed');
     }
 
-    return response.data.data?.plaintext || '';
+    return response.data?.plaintext || '';
   }
 
   /**
    * Health check
    */
   async health(): Promise<{ status: string; version: string; uptime: number }> {
-    const response = await this.client.get<
-      ApiResponse<{ status: string; version: string; uptime: number }>
-    >('/api/health');
+    const response = await this.request<{
+      status: string;
+      version: string;
+      uptime: number;
+    }>('GET', '/api/health');
 
-    if (!response.data.success) {
-      throw new Error(response.data.error || 'Health check failed');
+    if (!response.success) {
+      throw new Error(response.error || 'Health check failed');
     }
 
-    return (
-      response.data.data || { status: 'unknown', version: 'unknown', uptime: 0 }
-    );
+    return response.data || { status: 'unknown', version: 'unknown', uptime: 0 };
   }
 }
