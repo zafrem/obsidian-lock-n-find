@@ -29,7 +29,7 @@ export class PatternImportModal extends Modal {
     // Method 1: From File in Vault
     new Setting(contentEl)
       .setName("Import from file")
-      .setDesc("Select a JSON, CSV, TXT or MD file from your vault")
+      .setDesc("Select a JSON, CSV, TXT, or MD file from your vault.")
       .addText((text) => {
         text.setPlaceholder("path/to/patterns.json");
         text.inputEl.id = "file-path-input";
@@ -58,7 +58,7 @@ export class PatternImportModal extends Modal {
             } else if (filePath.endsWith('.md')) {
               patterns = await importFromMarkdown(this.app, filePath);
             } else {
-              new Notice("Please use a JSON, CSV, TXT, or MD file");
+              new Notice("Please use a JSON, CSV, TXT, or MD file.");
               return;
             }
 
