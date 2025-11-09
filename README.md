@@ -2,8 +2,9 @@
 
 ## Overview
 
-Lock and Find is a plugin for [Obsidian](https://obsidian.md) that helps you quickly locate and lock content within your notes. 
-**Hint. We protect your data from company.**
+Lock and Find is a plugin for [Obsidian](https://obsidian.md) that helps you quickly locate and lock content within your notes.
+
+**Hint. You protect your data from others...**
 
 This plugin is built with TypeScript and utilizes the Obsidian plugin API.
 
