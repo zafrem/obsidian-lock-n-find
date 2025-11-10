@@ -330,7 +330,7 @@ class KeyDisplayModal extends Modal {
       await navigator.clipboard.writeText(this.key);
       new Notice("API key copied to clipboard");
       copyBtn.textContent = "Copied!";
-      setTimeout(() => {
+      window.setTimeout(() => {
         copyBtn.textContent = "Copy";
       }, 2000);
     };

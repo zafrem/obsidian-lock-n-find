@@ -92,6 +92,16 @@ Available settings include:
 - **Lock duration**: Set how long content remains locked
 - **Search scope**: Configure which parts of your vault are searched
 
+## Network Access Disclosure
+
+This plugin includes **optional** features that may fetch resources from the internet. These features are **disabled by default** and only activate when explicitly configured by the user:
+
+- **Import patterns from URL**: Allows downloading PII detection patterns from remote JSON files
+- **Sync with GitHub Gist**: Enables synchronization of patterns with GitHub Gists
+- **Auto-update patterns**: Periodically updates patterns from a configured URL
+
+All network requests are made using Obsidian's built-in `requestUrl` API. The plugin does **not** transmit any of your vault content or personal data to external servers. Network features are only used to download pattern definitions to enhance PII detection capabilities.
+
 ## Troubleshooting
 
 ### Common Issues

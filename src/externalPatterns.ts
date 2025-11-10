@@ -1,7 +1,7 @@
 // src/externalPatterns.ts
 // Simple ways to import/update patterns from external sources
 
-import { Notice, TFile, requestUrl } from "obsidian";
+import { Notice, TFile, TFolder, requestUrl } from "obsidian";
 import type { App } from "obsidian";
 
 export interface ExternalPattern {
@@ -30,7 +30,7 @@ export async function importFromJSON(app: App, filePath: string): Promise<Extern
       throw new Error(`File not found: ${filePath}`);
     }
 
-    const content = await app.vault.read(file);
+    const content = await app.vault.cachedRead(file);
     const patterns = JSON.parse(content);
 
     new Notice(`Imported ${patterns.length} patterns from ${filePath}`);
@@ -55,7 +55,7 @@ export async function importFromTextFile(app: App, filePath: string): Promise<Ex
       throw new Error(`File not found: ${filePath}`);
     }
 
-    const content = await app.vault.read(file);
+    const content = await app.vault.cachedRead(file);
     const lines = content.split('\n').filter(line => line.trim() && !line.startsWith('#'));
 
     const patterns: ExternalPattern[] = lines.map(line => {
@@ -103,7 +103,7 @@ export async function importFromCSV(app: App, filePath: string): Promise<Externa
       throw new Error(`File not found: ${filePath}`);
     }
 
-    const content = await app.vault.read(file);
+    const content = await app.vault.cachedRead(file);
     const lines = content.split('\n').filter(line => line.trim());
 
     // Skip header if present
@@ -141,7 +141,7 @@ export async function importFromMarkdown(app: App, filePath: string): Promise<Ex
       throw new Error(`File not found: ${filePath}`);
     }
 
-    const content = await app.vault.read(file);
+    const content = await app.vault.cachedRead(file);
     const lines = content.split('\n');
 
     const patterns: ExternalPattern[] = [];
@@ -177,9 +177,17 @@ export async function importFromMarkdown(app: App, filePath: string): Promise<Ex
   }
 }
 
+// ============================================================================
+// PLANNED FEATURES - NOT YET IMPLEMENTED IN UI
+// The following methods (6-10) are defined but not currently integrated into
+// the plugin UI. They will be added in a future version.
+// ============================================================================
+
 /**
  * Method 6: Watch folder for pattern files
  * Auto-import any .patterns.json files in a specific folder
+ *
+ * @status NOT_IMPLEMENTED - Planned for future release
  */
 export async function watchPatternFolder(app: App, folderPath: string): Promise<ExternalPattern[]> {
   try {
@@ -187,14 +195,17 @@ export async function watchPatternFolder(app: App, folderPath: string): Promise<
     if (!folder) {
       throw new Error(`Folder not found: ${folderPath}`);
     }
+    if (!(folder instanceof TFolder)) {
+      throw new Error(`Path is not a folder: ${folderPath}`);
+    }
 
-    const files = app.vault.getFiles()
-      .filter(f => f.path.startsWith(folderPath) && f.name.endsWith('.patterns.json'));
+    const files = folder.children
+      .filter((f): f is TFile => f instanceof TFile && f.name.endsWith('.patterns.json'));
 
     const allPatterns: ExternalPattern[] = [];
 
     for (const file of files) {
-      const content = await app.vault.read(file);
+      const content = await app.vault.cachedRead(file);
       const patterns = JSON.parse(content);
       allPatterns.push(...patterns);
     }
@@ -209,6 +220,8 @@ export async function watchPatternFolder(app: App, folderPath: string): Promise<
 
 /**
  * Method 7: Export current patterns to file
+ *
+ * @status NOT_IMPLEMENTED - Planned for future release
  */
 export async function exportToJSON(app: App, patterns: ExternalPattern[], filePath: string): Promise<void> {
   try {
@@ -222,6 +235,8 @@ export async function exportToJSON(app: App, patterns: ExternalPattern[], filePa
 
 /**
  * Method 8: Sync with GitHub Gist
+ *
+ * @status NOT_IMPLEMENTED - Planned for future release
  */
 export async function syncWithGist(gistId: string, token?: string): Promise<ExternalPattern[]> {
   try {
@@ -254,6 +269,8 @@ export async function syncWithGist(gistId: string, token?: string): Promise<Exte
 /**
  * Method 9: Command line import via file drop
  * User can drag-drop a file to import
+ *
+ * @status NOT_IMPLEMENTED - Planned for future release
  */
 export function setupFileDrop(element: HTMLElement, onImport: (patterns: ExternalPattern[]) => void): void {
   element.addEventListener('dragover', (e) => {
@@ -313,6 +330,8 @@ export function setupFileDrop(element: HTMLElement, onImport: (patterns: Externa
 
 /**
  * Method 10: Auto-update from URL on schedule
+ *
+ * @status NOT_IMPLEMENTED - Planned for future release
  */
 export class PatternAutoUpdater {
   private intervalId?: number;

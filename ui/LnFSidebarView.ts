@@ -492,9 +492,9 @@ export class LnFSidebarView extends ItemView {
       span.setAttribute('data-selected-text', selectedText);
       
       range.surroundContents(span);
-      
+
       // Remove the draggable wrapper after a short delay if not dragged
-      setTimeout(() => {
+      window.setTimeout(() => {
         if (span && span.parentNode) {
           const parent = span.parentNode;
           while (span.firstChild) {
@@ -697,9 +697,9 @@ export class LnFSidebarView extends ItemView {
     
     // Replace the first occurrence of the text with encrypted version
     fileContent = fileContent.substring(0, index) + wrapped + fileContent.substring(index + text.length);
-    
+
     // Save the modified file
-    await this.app.vault.modify(activeFile, fileContent);
+    await this.app.vault.process(activeFile, () => fileContent);
   }
 
   /* -------- Get Password (with caching) -------- */
@@ -804,10 +804,10 @@ export class LnFSidebarView extends ItemView {
         // Encrypt the text
         const cipher = await encrypt(m.text, pwd);
         const wrapped = `<details>\n <summary>Lock</summary>\n §ENC_${makeUUID().slice(0,6)}_${cipher}§\n</details>`;
-        
+
         // Replace the original text with encrypted version
         text = text.replace(m.text, wrapped);
-        await this.app.vault.modify(file, text);
+        await this.app.vault.process(file, () => text);
         processedCount++;
       }
       
@@ -904,9 +904,9 @@ export class LnFSidebarView extends ItemView {
             }
           }
         }
-        
+
         // Save changes if any decryption was successful
-        if(changed) await this.app.vault.modify(f, txt);
+        if(changed) await this.app.vault.process(f, () => txt);
       }
       
       // Show success or no matches found message
@@ -922,7 +922,7 @@ export class LnFSidebarView extends ItemView {
       }
       
       // Keep status visible for a moment, then remove
-      setTimeout(() => {
+      window.setTimeout(() => {
         if (statusBar && statusBar.parentNode) {
           statusBar.remove();
         }
